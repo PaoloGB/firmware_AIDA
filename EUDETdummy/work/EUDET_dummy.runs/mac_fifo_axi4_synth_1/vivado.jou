@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1733598 on Wed Dec 14 22:35:42 MST 2016
+# IP Build 1731160 on Wed Dec 14 23:47:21 MST 2016
+# Start of session at: Tue Aug 22 11:52:28 2017
+# Process ID: 16525
+# Current directory: /users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/work/EUDET_dummy.runs/mac_fifo_axi4_synth_1
+# Command line: vivado -log mac_fifo_axi4.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source mac_fifo_axi4.tcl
+# Log file: /users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/work/EUDET_dummy.runs/mac_fifo_axi4_synth_1/mac_fifo_axi4.vds
+# Journal file: /users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/work/EUDET_dummy.runs/mac_fifo_axi4_synth_1/vivado.jou
+#-----------------------------------------------------------
+source mac_fifo_axi4.tcl -notrace

@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1733598 on Wed Dec 14 22:35:42 MST 2016
+# IP Build 1731160 on Wed Dec 14 23:47:21 MST 2016
+# Start of session at: Thu Aug 17 17:23:48 2017
+# Process ID: 3836
+# Current directory: /users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/work/TLU_v1e.runs/temac_gbe_v9_rgmii_synth_1
+# Command line: vivado -log temac_gbe_v9_rgmii.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source temac_gbe_v9_rgmii.tcl
+# Log file: /users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/work/TLU_v1e.runs/temac_gbe_v9_rgmii_synth_1/temac_gbe_v9_rgmii.vds
+# Journal file: /users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/work/TLU_v1e.runs/temac_gbe_v9_rgmii_synth_1/vivado.jou
+#-----------------------------------------------------------
+source temac_gbe_v9_rgmii.tcl -notrace

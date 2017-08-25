@@ -1,0 +1,39 @@
+K 18
+svn:global-ignores
+V 6
+*.bak
+
+K 10
+svn:ignore
+V 469
+DUT_signals.aux
+Main_TLU.acn
+Main_TLU.aux
+Main_TLU.bbl
+Main_TLU.blg
+Main_TLU.idx
+Main_TLU.ilg
+Main_TLU.ind
+Main_TLU.log
+Main_TLU.synctex
+Main_TLU.toc
+Main_TLU.xdy
+ch_AIDA_clock.aux
+ch_I2C.aux
+ch_TLU_clock.aux
+ch_TLU_clock.bbl
+ch_TLU_clock.blg
+ch_TLU_clock.log
+ch_EventBuffer.aux
+ch_TLU_Appendix.aux
+ch_TLU_Hardware.aux
+ch_TLU_Preparation.aux
+ch_TLU_triggerInputs.aux
+Main_TLU.dvi
+Main_TLU.out
+ch_Functions.aux
+ch_TLU_Functions.aux
+ch_TLU_IPBusRegs.aux
+AIDA_TLU_v1d.prj
+
+END

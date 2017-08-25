@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1733598 on Wed Dec 14 22:35:42 MST 2016
+# IP Build 1731160 on Wed Dec 14 23:47:21 MST 2016
+# Start of session at: Fri Aug 25 14:21:54 2017
+# Process ID: 31962
+# Current directory: /users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/work/TLU_v1e.runs/synth_1
+# Command line: vivado -log top_tlu_v1e.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_tlu_v1e.tcl
+# Log file: /users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/work/TLU_v1e.runs/synth_1/top_tlu_v1e.vds
+# Journal file: /users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/work/TLU_v1e.runs/synth_1/vivado.jou
+#-----------------------------------------------------------
+source top_tlu_v1e.tcl -notrace

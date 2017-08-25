@@ -1,0 +1,382 @@
+Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
+-------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2016.4 (lin64) Build 1733598 Wed Dec 14 22:35:42 MST 2016
+| Date         : Thu Aug 24 09:24:55 2017
+| Host         : fortis.phy.bris.ac.uk running 64-bit Scientific Linux release 6.9 (Carbon)
+| Command      : report_methodology -file top_EUDET_dummy_methodology_drc_routed.rpt -rpx top_EUDET_dummy_methodology_drc_routed.rpx
+| Design       : top_EUDET_dummy
+| Device       : xc7a35tcsg324-1
+| Speed File   : -1
+| Design State : Routed
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Report Methodology
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+             Max violations: <unlimited>
+             Violations found: 66
++-----------+----------+------------------------------------------------------------------+------------+
+| Rule      | Severity | Description                                                      | Violations |
++-----------+----------+------------------------------------------------------------------+------------+
+| CKLD-2    | Warning  | Clock Net has IO Driver, not a Clock Buf, and/or non-Clock loads | 1          |
+| PDRC-190  | Warning  | Suboptimally placed synchronized register chain                  | 14         |
+| SYNTH-6   | Warning  | Timing of a block RAM might be sub-optimal                       | 17         |
+| TIMING-9  | Warning  | Unknown CDC Logic                                                | 1          |
+| TIMING-10 | Warning  | Missing property on synchronizer                                 | 1          |
+| TIMING-18 | Warning  | Missing input or output delay                                    | 24         |
+| TIMING-28 | Warning  | Auto-derived clock referenced by a timing constraint             | 3          |
+| XDCH-2    | Warning  | Same min and max delay values on IO port                         | 5          |
++-----------+----------+------------------------------------------------------------------+------------+
+
+2. REPORT DETAILS
+-----------------
+CKLD-2#1 Warning
+Clock Net has IO Driver, not a Clock Buf, and/or non-Clock loads  
+Clock net clk_encl_buf is directly driven by an IO rather than a Clock Buffer or may be an IO driving a mix of Clock Buffer and non-Clock loads. This connectivity should be reviewed and corrected as appropriate. Driver(s): IBUFG_inst/O
+Related violations: <none>
+
+PDRC-190#1 Warning
+Suboptimally placed synchronized register chain  
+The FDCE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_axi_rx_rstn_rx_clk/async_rst4_reg in site SLICE_X4Y24 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_axi_rx_rstn_rx_clk/sync_rst0_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#2 Warning
+Suboptimally placed synchronized register chain  
+The FDCE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_rx_clk/async_rst4_reg in site SLICE_X3Y23 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_rx_clk/sync_rst0_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#3 Warning
+Suboptimally placed synchronized register chain  
+The FDCE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_tx_clk/async_rst4_reg in site SLICE_X15Y19 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_tx_clk/sync_rst0_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#4 Warning
+Suboptimally placed synchronized register chain  
+The FDCE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_tx_axi_rstn_tx_clk/async_rst4_reg in site SLICE_X13Y20 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_tx_axi_rstn_tx_clk/sync_rst0_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#5 Warning
+Suboptimally placed synchronized register chain  
+The FDPE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_rx_rst_mgmt_rx_clk/async_rst4_reg in site SLICE_X5Y23 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_rx_rst_mgmt_rx_clk/sync_rst0_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#6 Warning
+Suboptimally placed synchronized register chain  
+The FDPE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_tx_rst_mgmt_tx_clk/async_rst4_reg in site SLICE_X14Y20 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_tx_rst_mgmt_tx_clk/sync_rst0_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#7 Warning
+Suboptimally placed synchronized register chain  
+The FDPE cell infra/eth/fifo/U0/inst_fifo_gen/gaxis_fifo.gaxisf.axisf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.rst_wr_reg2_reg in site SLICE_X12Y23 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/fifo/U0/inst_fifo_gen/gaxis_fifo.gaxisf.axisf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gsckt_wrst.garst_sync[1].arst_sync_inst/Q_reg_reg[0] is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#8 Warning
+Suboptimally placed synchronized register chain  
+The FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_axi_rx_rstn_rx_clk/sync_rst0_reg in site SLICE_X4Y25 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_axi_rx_rstn_rx_clk/sync_rst1_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#9 Warning
+Suboptimally placed synchronized register chain  
+The FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_rx_clk/sync_rst0_reg in site SLICE_X3Y24 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_rx_clk/sync_rst1_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#10 Warning
+Suboptimally placed synchronized register chain  
+The FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_tx_clk/sync_rst0_reg in site SLICE_X15Y20 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_glbl_rstn_tx_clk/sync_rst1_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#11 Warning
+Suboptimally placed synchronized register chain  
+The FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_rx_rst_mgmt_rx_clk/sync_rst0_reg in site SLICE_X5Y24 is part of a synchronized register chain that is suboptimally placed as the load FDSE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_rx_rst_mgmt_rx_clk/sync_rst1_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#12 Warning
+Suboptimally placed synchronized register chain  
+The FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_tx_rst_mgmt_tx_clk/sync_rst0_reg in site SLICE_X14Y21 is part of a synchronized register chain that is suboptimally placed as the load FDSE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_int_tx_rst_mgmt_tx_clk/sync_rst1_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#13 Warning
+Suboptimally placed synchronized register chain  
+The FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_tx_axi_rstn_tx_clk/sync_rst0_reg in site SLICE_X13Y21 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/emac0/inst/temac_gbe_v9_rgmii_core/sync_tx_axi_rstn_tx_clk/sync_rst1_reg is not placed in the same (SLICE) site.
+Related violations: <none>
+
+PDRC-190#14 Warning
+Suboptimally placed synchronized register chain  
+The FDRE cell infra/eth/fifo/U0/inst_fifo_gen/gaxis_fifo.gaxisf.axisf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.garst_sync_ic[3].rd_rst_inst/Q_reg_reg[0] in site SLICE_X13Y24 is part of a synchronized register chain that is suboptimally placed as the load FDRE cell infra/eth/fifo/U0/inst_fifo_gen/gaxis_fifo.gaxisf.axisf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.garst_sync_ic[1].rd_rst_wr_inst/Q_reg_reg[0] is not placed in the same (SLICE) site.
+Related violations: <none>
+
+SYNTH-6#1 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/internal_ram/ram_reg, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#2 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram1_reg_0, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#3 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram1_reg_1, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#4 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram2_reg_0, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#5 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram2_reg_1, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#6 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram3_reg_0, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#7 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram3_reg_1, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#8 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram4_reg_0, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#9 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_rx_ram/ram4_reg_1, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#10 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_0, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#11 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_1, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#12 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_2, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#13 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_3, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#14 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_4, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#15 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_5, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#16 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_6, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+SYNTH-6#17 Warning
+Timing of a block RAM might be sub-optimal  
+The timing for the instance infra/ipbus/udp_if/ipbus_tx_ram/ram_reg_7, implemented as a block RAM, might be sub-optimal as no output register was merged into the block
+Related violations: <none>
+
+TIMING-9#1 Warning
+Unknown CDC Logic  
+One or more asynchronous Clock Domain Crossing has been detected between 2 clock domains through a set_false_path or a set_clock_groups or set_max_delay -datapath_only constraint but no double-registers logic synchronizer has been found on the side of the capture clock. It is recommended to run report_cdc for a complete and detailed CDC coverage
+Related violations: <none>
+
+TIMING-10#1 Warning
+Missing property on synchronizer  
+One or more logic synchronizer has been detected between 2 clock domains but the synchronizer does not have the property ASYNC_REG defined on one or both registers. It is recommended to run report_cdc for a complete and detailed CDC coverage
+Related violations: <none>
+
+TIMING-18#1 Warning
+Missing input or output delay  
+An input delay is missing on cont_i[0] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#2 Warning
+Missing input or output delay  
+An input delay is missing on cont_i[1] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#3 Warning
+Missing input or output delay  
+An input delay is missing on cont_i[2] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#4 Warning
+Missing input or output delay  
+An input delay is missing on cont_i[3] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#5 Warning
+Missing input or output delay  
+An input delay is missing on i2c_scl_b relative to clock(s) VIRTUAL_clk_ipb_i 
+Related violations: <none>
+
+TIMING-18#6 Warning
+Missing input or output delay  
+An input delay is missing on i2c_sda_b relative to clock(s) VIRTUAL_clk_ipb_i 
+Related violations: <none>
+
+TIMING-18#7 Warning
+Missing input or output delay  
+An input delay is missing on triggers_i[0] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#8 Warning
+Missing input or output delay  
+An input delay is missing on triggers_i[1] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#9 Warning
+Missing input or output delay  
+An input delay is missing on triggers_i[2] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#10 Warning
+Missing input or output delay  
+An input delay is missing on triggers_i[3] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#11 Warning
+Missing input or output delay  
+An output delay is missing on busy_o[0] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#12 Warning
+Missing input or output delay  
+An output delay is missing on busy_o[1] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#13 Warning
+Missing input or output delay  
+An output delay is missing on busy_o[2] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#14 Warning
+Missing input or output delay  
+An output delay is missing on busy_o[3] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#15 Warning
+Missing input or output delay  
+An output delay is missing on dut_clk_o[0] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#16 Warning
+Missing input or output delay  
+An output delay is missing on dut_clk_o[1] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#17 Warning
+Missing input or output delay  
+An output delay is missing on dut_clk_o[2] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#18 Warning
+Missing input or output delay  
+An output delay is missing on dut_clk_o[3] relative to clock(s) VIRTUAL_s_clk160 
+Related violations: <none>
+
+TIMING-18#19 Warning
+Missing input or output delay  
+An output delay is missing on gpio relative to clock(s) VIRTUAL_s_clk320 
+Related violations: <none>
+
+TIMING-18#20 Warning
+Missing input or output delay  
+An output delay is missing on rgmii_tx_ctl relative to clock(s) infra/eth/emac0/inst_rgmii_rx_clk 
+Related violations: <none>
+
+TIMING-18#21 Warning
+Missing input or output delay  
+An output delay is missing on rgmii_txd[0] relative to clock(s) infra/eth/emac0/inst_rgmii_rx_clk 
+Related violations: <none>
+
+TIMING-18#22 Warning
+Missing input or output delay  
+An output delay is missing on rgmii_txd[1] relative to clock(s) infra/eth/emac0/inst_rgmii_rx_clk 
+Related violations: <none>
+
+TIMING-18#23 Warning
+Missing input or output delay  
+An output delay is missing on rgmii_txd[2] relative to clock(s) infra/eth/emac0/inst_rgmii_rx_clk 
+Related violations: <none>
+
+TIMING-18#24 Warning
+Missing input or output delay  
+An output delay is missing on rgmii_txd[3] relative to clock(s) infra/eth/emac0/inst_rgmii_rx_clk 
+Related violations: <none>
+
+TIMING-28#1 Warning
+Auto-derived clock referenced by a timing constraint  
+The auto-derived clock I is referenced by name inside timing constraint (see constraint position 19 in the Timing Constraint window in Vivado IDE). It is recommended to reference an auto-derived clock by the pin name attached to the clock: get_clocks -of_objects [get_pins infra/clocks/mmcm/CLKOUT1]
+Related violations: <none>
+
+TIMING-28#2 Warning
+Auto-derived clock referenced by a timing constraint  
+The auto-derived clock clk_ipb_i is referenced by name inside timing constraint (see constraint position 19 in the Timing Constraint window in Vivado IDE). It is recommended to reference an auto-derived clock by the pin name attached to the clock: get_clocks -of_objects [get_pins infra/clocks/mmcm/CLKOUT3]
+Related violations: <none>
+
+TIMING-28#3 Warning
+Auto-derived clock referenced by a timing constraint  
+The auto-derived clock s_clk160 is referenced by name inside timing constraint (see constraint position 19 in the Timing Constraint window in Vivado IDE). It is recommended to reference an auto-derived clock by the pin name attached to the clock: get_clocks -of_objects [get_pins I4/pll_base_inst/CLKOUT1]
+Related violations: <none>
+
+XDCH-2#1 Warning
+Same min and max delay values on IO port  
+The same output delay of 0.000 ns has been defined on port 'leds[0]' relative to clock clk_enclustra for both max and min. Make sure this reflects the design intent.
+set_output_delay -clock [get_clocks clk_enclustra] 0.000 [get_ports {leds[*]} -filter {direction != in}]
+/users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/constraints/enclustra_ax3_pm3.tcl (Line: 32)
+Related violations: <none>
+
+XDCH-2#2 Warning
+Same min and max delay values on IO port  
+The same output delay of 0.000 ns has been defined on port 'leds[1]' relative to clock clk_enclustra for both max and min. Make sure this reflects the design intent.
+set_output_delay -clock [get_clocks clk_enclustra] 0.000 [get_ports {leds[*]} -filter {direction != in}]
+/users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/constraints/enclustra_ax3_pm3.tcl (Line: 32)
+Related violations: <none>
+
+XDCH-2#3 Warning
+Same min and max delay values on IO port  
+The same output delay of 0.000 ns has been defined on port 'leds[2]' relative to clock clk_enclustra for both max and min. Make sure this reflects the design intent.
+set_output_delay -clock [get_clocks clk_enclustra] 0.000 [get_ports {leds[*]} -filter {direction != in}]
+/users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/constraints/enclustra_ax3_pm3.tcl (Line: 32)
+Related violations: <none>
+
+XDCH-2#4 Warning
+Same min and max delay values on IO port  
+The same output delay of 0.000 ns has been defined on port 'leds[3]' relative to clock clk_enclustra for both max and min. Make sure this reflects the design intent.
+set_output_delay -clock [get_clocks clk_enclustra] 0.000 [get_ports {leds[*]} -filter {direction != in}]
+/users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/constraints/enclustra_ax3_pm3.tcl (Line: 32)
+Related violations: <none>
+
+XDCH-2#5 Warning
+Same min and max delay values on IO port  
+The same output delay of 0.000 ns has been defined on port 'phy_rstn' relative to clock clk_enclustra for both max and min. Make sure this reflects the design intent.
+set_output_delay -clock [get_clocks clk_enclustra] 0.000 [get_ports phy_rstn -filter {direction != in}]
+/users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/constraints/enclustra_ax3_pm3.tcl (Line: 48)
+Related violations: <none>
+
+

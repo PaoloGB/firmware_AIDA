@@ -1,0 +1,12 @@
+\section{Event buffer}\label{ch:eventBuffer}
+The event buffer IPBus slave has four registers.
+Writing to \verb|EventFifoCSR| will reset the \gls{fifo}. Reading from either of the register will put their data on the IPBus data line.\\
+Reading from \verb|EventFifoCSR| returns the following:
+\begin{itemize}
+  \item bit 0: \gls{fifo} empty flag
+  \item bit 1: \gls{fifo} almost empty flag
+  \item bit 2: \gls{fifo} almost full flag
+  \item bit 3: \gls{fifo} full flag
+  \item bit 4: \gls{fifo} programmable full flag
+  \item other bits: 0
+\end{itemize}
