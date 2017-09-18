@@ -6,3 +6,4 @@
 /Enclustra_tests/
 *.py~
 *.pyc
+.svn/*
