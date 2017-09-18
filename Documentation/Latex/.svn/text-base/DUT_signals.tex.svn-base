@@ -1,2 +1,0 @@
-\chapter{DUT signals}\label{ch:DUTsignals}
-In the old firmware the clock signals (\verb|dut_clk_n_o, dut_clk_p_o|) were configured as input/output. The new hardware has the lines separated so \verb|dut_clk_p_i| is the input vector and \verb|dut_clk_p_o| the output one.\\ 
