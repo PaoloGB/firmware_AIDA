@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<Runs Version="1" Minor="0">
-	<Run Id="temac_gbe_v9_rgmii_synth_1" LaunchDir="/users/phpgb/workspace/myFirmware/AIDA/EUDETdummy/work/EUDET_dummy.runs/temac_gbe_v9_rgmii_synth_1" FlowId="Vivado_Synthesis" FromStepId="vivado" ToStepId="vivado"/>
-</Runs>
-
