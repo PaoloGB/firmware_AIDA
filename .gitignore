@@ -1,0 +1,8 @@
+/TLU_v1e/work/TLU_v1e.runs/*
+/EUDETdummy/work/*
+/TLU_v1e/work/*
+/TLU_v1c/work/*
+/Enclustra_Example/*
+/Enclustra_tests/
+*.py~
+*.pyc

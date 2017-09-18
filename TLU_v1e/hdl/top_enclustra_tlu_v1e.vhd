@@ -23,7 +23,7 @@ use work.ipbus.ALL;
 
 entity top_tlu_v1e is
     generic(
-    constant FW_VERSION : unsigned(31 downto 0):= X"abce0001"; -- Firmware revision. Remember to change this as needed.
+    constant FW_VERSION : unsigned(31 downto 0):= X"abce0006"; -- Firmware revision. Remember to change this as needed.
     g_NUM_DUTS  : positive := 4; -- <- was 3
     g_NUM_TRIG_INPUTS   :positive := 6;-- <- was 4
     g_NUM_EDGE_INPUTS   :positive := 6;--  <-- was 4
@@ -406,11 +406,15 @@ begin
 
     i2c_reset <= '1';
     clk_gen_rst <= '1';
-    gpio <= strobe_8x_logic;
+    ---gpio <= strobe_8x_logic;---
+    gpio <= veto_o;---
+    --gpio <= busy_i(1);---
+    
+    --Set diff clock out to 0 because we cannot have the correct differential voltage output
     sysclk_50_o_p <= '0';
     sysclk_50_o_n <= '0';
+    --Set busy_o to 0 for now
     busy_o <= std_logic_vector(to_unsigned(0,    busy_o'length));
-    --busy_o <= '000000';
     --sysclk_40_o_p <= sysclk;
 
 ------------------------------------------
@@ -680,12 +684,12 @@ begin
 
 --    dutout0: entity work.DUTs_outputs
 --    port map(
---        clk_in => encl_clock50, 
---        d_clk_o => dut_clk_o,
---        d_trg_o => triggers_o,
+--        clk_in => clk_encl_buf, 
+--       d_clk_o => open, --dut_clk_o,
+--        d_trg_o => open, --triggers_o,
 --        d_busy_o => busy_o,
---        d_cont_o => cont_o,
---        d_spare_o => spare_o
+--        d_cont_o => open, --cont_o,
+--        d_spare_o => open --spare_o
 --    );
    
 --    clk50_o_fromEnclustra : clk_wiz_0

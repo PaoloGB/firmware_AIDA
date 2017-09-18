@@ -60,7 +60,7 @@ class MyPrompt(cmd.Cmd):
 
 #################################################
 if __name__ == "__main__":
-    EUDummy= EUDETdummy("tlu", "file://./EUDETdummyconnection.xml")
+    EUDummy= EUDETdummy("eudummy", "file://./EUDETdummyconnection.xml")
     EUDummy.initialize()
 
     logdata= True

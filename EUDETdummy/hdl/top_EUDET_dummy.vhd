@@ -23,7 +23,7 @@ use work.ipbus.ALL;
 
 entity top_EUDET_dummy is
     generic(
-    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0000"; -- Firmware revision. Remember to change this as needed.
+    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0001"; -- Firmware revision. Remember to change this as needed.
     g_NUM_DUTS  : positive := 4; -- <- was 3
     g_NUM_TRIG_INPUTS   :positive := 6;-- <- was 4
     g_NUM_EDGE_INPUTS   :positive := 6;--  <-- was 4
@@ -457,7 +457,7 @@ begin
 --	mac_addr <= X"020ddba1151" & dip_sw; -- Careful here, arbitrary addresses do not always work
 --	ip_addr <= X"c0a8c81" & dip_sw; -- 192.168.200.16+n
 	mac_addr <= X"020ddba1151d"; -- Careful here, arbitrary addresses do not always work
-	ip_addr <= X"c0a8c81d"; -- 192.168.200.16+n
+	ip_addr <= X"c0a8c81d"; -- 192.168.200.29
 
 ------------------------------------------
     I1 : entity work.ipbus_ctrlreg_v
@@ -724,7 +724,8 @@ begin
 --     generate an instance of the Dummy DUT behind connector 0
     DUT_Instance: Dummy_DUT 
       Port map ( 
-           CLK => clk_4x_logic,--160 Mhz clock
+           --CLK => clk_4x_logic,--160 Mhz clock
+           CLK => sysclk_40,
            RST => cont_i(iDUT),-- coming from HDMI pin
            Trigger => triggers_i(iDUT), --coming from HDMI pin
            Busy => busy_o(iDUT), --going out on HDMI pin

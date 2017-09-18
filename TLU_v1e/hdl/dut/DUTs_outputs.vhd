@@ -49,12 +49,12 @@ begin
         if rising_edge(clk_in) then   -- rising clock edge
             toggleme <= not toggleme;
             d_clk_o(1) <= toggleme;
-            d_clk_o(2) <= '0';
-            d_clk_o(3) <= '0';
-            d_trg_o <=  ('0' & '0' & '0' & '0');
-            d_busy_o <= ('0' & '0' & '0' & '0');
-            d_cont_o <= ('0' & '0' & '0' & '0');
-            d_spare_o <=('0' & '0' & '0' & '0');
+            d_clk_o(2) <= toggleme;
+            d_clk_o(3) <= toggleme;
+            d_trg_o <=  (toggleme & toggleme & toggleme & toggleme);
+            d_busy_o <= (toggleme & toggleme & toggleme & toggleme);
+            d_cont_o <= (toggleme & toggleme & toggleme & toggleme);
+            d_spare_o <=(toggleme & toggleme & toggleme & toggleme);
         end if;
         d_clk_o(0) <= clk_in;
     end process gen_clk;
