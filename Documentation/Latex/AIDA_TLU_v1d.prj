@@ -1,0 +1,69 @@
+31 Patch Control
+
+0
+0
+1
+Main_TLU.tex
+15
+11
+8
+
+Main_TLU.tex
+TeX
+135278587 0 -1 1986 -1 1942 75 75 1448 573 0 1 217 425 -1 -1 0 0 43 -1 -1 43 1 0 1942 -1  0 -1 0
+ch_TLU_Preparation.tex
+TeX
+1060859 1 -1 64 -1 74 150 150 1523 648 0 1 273 17 -1 -1 0 0 43 -1 -1 43 1 0 74 -1  0 -1 0
+ch_TLU_Hardware.tex
+TeX
+1060859 0 -1 3875 -1 3841 200 200 1573 698 0 1 153 731 -1 -1 0 0 41 -1 -1 41 1 0 3841 -1  0 -1 0
+ch_TLU_Functions.tex
+TeX
+1060859 0 22 71 -1 3888 0 0 1398 472 0 1 233 561 -1 -1 0 0 39 -1 -1 39 1 0 3888 -1  0 -1 0
+ch_TLU_IPBusRegs.tex
+TeX
+17838075 1 -1 14645 -1 14630 25 25 1423 497 0 1 249 442 -1 -1 0 0 45 -1 -1 45 1 0 14630 -1  0 -1 0
+ch_TLU_Appendix.tex
+TeX
+1060859 4 -1 36 -1 37 175 175 1548 673 0 1 337 0 -1 -1 0 0 37 -1 -1 37 1 0 37 -1  0 -1 0
+DUT_signals.tex
+TeX
+1060859 0 -1 220 -1 270 75 75 1448 573 0 1 1849 17 -1 -1 0 0 42 -1 -1 42 1 0 270 -1  0 -1 0
+ch_TLU_clock.tex
+TeX
+1060859 0 -1 3508 -1 3508 100 100 1473 598 0 1 553 561 -1 -1 0 0 31 -1 -1 31 1 0 3508 -1  0 -1 0
+ch_TLU_triggerInputs.tex
+TeX
+286273531 0 -1 24307 -1 24306 100 100 1473 598 0 1 977 782 -1 -1 0 0 48 -1 -1 48 1 0 24306 -1  0 -1 0
+ch_EventBuffer.tex
+TeX
+1060859 0 -1 545 -1 563 125 125 1498 623 0 1 41 204 -1 -1 0 0 44 -1 -1 44 1 0 563 -1  0 -1 0
+O:\LatexFiles\Glossary\myGlossary.tex
+TeX
+1060859 0 -1 891 -1 892 50 50 1423 548 0 1 633 85 -1 -1 0 0 61 -1 -1 61 1 0 892 -1  0 0 0
+:\Dati\Latex files\CV\CVinglese.tex
+TeX
+269496315 0 -1 0 -1 0 25 25 1423 497 0 1 41 0 -1 -1 0 0 -1 -1 -1 -1 1 0 0 -1  0 -1 0
+:\Dati\Latex files\CV\CVinglese.pdf
+DATA
+273744114 0 0 1 0 1 0 0 1398 472 1 0 73 0 -1 -1 0 0 -1 -1 -1 -1 1 0 1 0  0 0 0
+:\Workspace\myFirmware\DUNE\Documentation\Main_pc053a.tex
+TeX
+269496315 1 -1 0 -1 3664 0 0 1373 498 0 1 41 697 -1 -1 0 0 43 -1 -1 43 1 0 3664 -1  0 -1 0
+:\Workspace\myFirmware\DUNE\Documentation\ch_I2C.tex
+TeX
+1060859 0 31 17 -1 493 25 25 1398 523 0 1 161 136 -1 -1 0 0 28 -1 -1 28 1 0 493 -1  0 -1 0
+
+*Main_TLU.tex
+>
+*O:/LatexFiles/Glossary/myGlossary.tex
+*ch_TLU_Preparation
+*ch_TLU_Hardware
+*ch_TLU_clock
+*DUT_signals
+*ch_TLU_triggerInputs
+*ch_EventBuffer
+*ch_TLU_Appendix
+*ch_TLU_Functions
+*ch_TLU_IPBusRegs
+<
