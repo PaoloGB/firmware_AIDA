@@ -5,10 +5,12 @@
 /Enclustra_Example/*
 /Enclustra_tests/
 /Data/*
-*.py~
 *.pyc
 .svn/*
 
+## Backup files
+*.py~
+*.md~
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

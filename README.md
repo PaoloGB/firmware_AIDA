@@ -5,3 +5,6 @@ This repository contains the VHL used to generate the firmware for the AIDA TLU,
 
 # Scripts
 The repository also contains Python scripts used to test the hardware. These scripts rely on a few libraries not linked here, so they are unlikely to work "out of the box".
+
+# EUDAQ2
+The best way to operate on the TLU is by using the EUDAQ2 tools (provide link!).
