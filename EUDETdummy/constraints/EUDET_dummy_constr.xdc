@@ -28,8 +28,8 @@ set_property PACKAGE_PIN F6 [get_ports gpio]
 
 ## Crystal clock
 set_property IOSTANDARD LVDS_25 [get_ports sysclk_40_i_p]
-set_property PACKAGE_PIN T5 [get_ports sysclk_40_i_p]
 set_property PACKAGE_PIN T4 [get_ports sysclk_40_i_n]
+set_property PACKAGE_PIN T5 [get_ports sysclk_40_i_p]
 
 ## Output clock (currently not working so set to 0)
 set_property IOSTANDARD LVCMOS33 [get_ports sysclk_50_o_p]
@@ -103,3 +103,6 @@ set_property PACKAGE_PIN G3 [get_ports {dut_clk_i[3]}]
 
 
 
+
+
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
