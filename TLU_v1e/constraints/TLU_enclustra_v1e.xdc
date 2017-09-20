@@ -5,7 +5,6 @@
 #set_property PACKAGE_PIN H1 [get_ports {threshold_discr_p_i[5]}]
 
 #set_property IOSTANDARD LVCMOS33 [get_ports {threshold_discr_n_i[*]}]
-set property IOSTANDARD LVDS_25 [get_ports {threshold_discr_p_i[*]}]
 set_property PACKAGE_PIN B1 [get_ports {threshold_discr_p_i[0]}]
 set_property PACKAGE_PIN A1 [get_ports {threshold_discr_n_i[0]}]
 set_property PACKAGE_PIN C4 [get_ports {threshold_discr_p_i[1]}]
@@ -16,8 +15,8 @@ set_property PACKAGE_PIN C6 [get_ports {threshold_discr_p_i[3]}]
 set_property PACKAGE_PIN C5 [get_ports {threshold_discr_n_i[3]}]
 set_property PACKAGE_PIN J4 [get_ports {threshold_discr_p_i[4]}]
 set_property PACKAGE_PIN H4 [get_ports {threshold_discr_n_i[4]}]
-set_property PACKAGE_PIN H1 [get_ports {threshold_discr_p_i[5]}]
 set_property PACKAGE_PIN G1 [get_ports {threshold_discr_n_i[5]}]
+set_property PACKAGE_PIN H1 [get_ports {threshold_discr_p_i[5]}]
 
 ## Miscellaneous I/O
 set_property IOSTANDARD LVCMOS33 [get_ports clk_gen_rst]
@@ -28,8 +27,8 @@ set_property PACKAGE_PIN F6 [get_ports gpio]
 
 ## Crystal clock
 set_property IOSTANDARD LVDS_25 [get_ports sysclk_40_i_p]
-set_property PACKAGE_PIN T5 [get_ports sysclk_40_i_p]
 set_property PACKAGE_PIN T4 [get_ports sysclk_40_i_n]
+set_property PACKAGE_PIN T5 [get_ports sysclk_40_i_p]
 
 ## Output clock (currently not working so set to 0)
 set_property IOSTANDARD LVCMOS33 [get_ports sysclk_50_o_p]
@@ -103,5 +102,8 @@ set_property PACKAGE_PIN G3 [get_ports {dut_clk_i[3]}]
 
 
 
-set_input_delay -clock [get_clocks [get_clocks -of_objects [get_pins I4/pll_base_inst/CLKOUT0]]] -rise -min 0.30 [get_ports -regexp -filter { NAME =~  ".*thresh.*" && DIRECTION == "IN" }]
+set_input_delay -clock [get_clocks [get_clocks -of_objects [get_pins I4/pll_base_inst/CLKOUT0]]] -rise -min 0.300 [get_ports -regexp -filter { NAME =~  ".*thresh.*" && DIRECTION == "IN" }]
 set_input_delay -clock [get_clocks [get_clocks -of_objects [get_pins I4/pll_base_inst/CLKOUT0]]] -rise -max 0.400 [get_ports -regexp -filter { NAME =~  ".*thresh.*" && DIRECTION == "IN" }]
+
+
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]

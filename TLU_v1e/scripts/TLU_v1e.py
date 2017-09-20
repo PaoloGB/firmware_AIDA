@@ -7,7 +7,7 @@ from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
 
-class EUDETdummy:
+class TLU:
     """docstring for TLU"""
     def __init__(self, dev_name, man_file):
         self.dev_name = dev_name
@@ -21,7 +21,7 @@ class EUDETdummy:
 
         self.fwVersion = self.hw.getNode("version").read()
         self.hw.dispatch()
-        print "EUDUMMY FIRMWARE VERSION= " , hex(self.fwVersion)
+        print "TLU V1E FIRMWARE VERSION= " , hex(self.fwVersion)
 
         # Instantiate a I2C core to configure components
         self.TLU_I2C= I2CCore(self.hw, 10, 5, "i2c_master", None)
@@ -45,20 +45,20 @@ class EUDETdummy:
         self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
         self.IC6.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(0, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(0, 0x77)# If output, set to XX
+        self.IC6.setOutputs(0, 0xAA)# If output, set to XX
 
         self.IC6.setInvertReg(1, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(1, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(1, 0x77)# If output, set to XX
+        self.IC6.setOutputs(1, 0xAA)# If output, set to XX
 
         self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
         self.IC7.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC7.setIOReg(0, 0x00)# 0= output, 1= input
-        self.IC7.setOutputs(0, 0x00)# If output, set to XX
+        self.IC7.setOutputs(0, 0x0F)# If output, set to XX
 
         self.IC7.setInvertReg(1, 0x00)# 0= normal, 1= inverted
         self.IC7.setIOReg(1, 0x00)# 0= output, 1= input
-        self.IC7.setOutputs(1, 0xB0)# If output, set to XX
+        self.IC7.setOutputs(1, 0x50)# If output, set to XX
 
 
 ##################################################################################################################################
@@ -180,7 +180,7 @@ class EUDETdummy:
         print "  CLOCK STATUS [expected 1]"
         print "\t", hex(clockStatus)
         if ( clockStatus == 0 ):
-            "ERROR: Clocks in EUDUMMY FPGA are not locked."
+            "ERROR: Clocks in TLU FPGA are not locked."
         return clockStatus
 
     def getDUTmask(self):
@@ -234,7 +234,7 @@ class EUDETdummy:
 
     def getSN(self):
         epromcontent=self.readEEPROM(0xfa, 6)
-        print "  EUDET dummy serial number (EEPROM):"
+        print "  FMC-TLU serial number (EEPROM):"
         result="\t"
         for iaddr in epromcontent:
             result+="%02x "%(iaddr)
@@ -514,27 +514,76 @@ class EUDETdummy:
             fineTsList.insert(0, evNum)
             #print fineTsList
             outList.insert(len(outList), fineTsList)
-        printdata= False
-        if (printdata):
-            print "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-            print "EN#\tCOARSE_TS\tFINE_TS0...FINE_TS11"
-            pprint.pprint(outList)
+        #print "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+        #print "EN#\tCOARSE_TS\tFINE_TS0...FINE_TS11"
+        #pprint.pprint(outList)
         return outList
 
+    def plotFifoData(self, outList):
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import matplotlib.mlab as mlab
 
+        coarseColumn= [row[1] for row in outList]
+        fineColumn= [row[2] for row in outList]
+        timeStamp= [sum(x) for x in zip(coarseColumn, fineColumn)]
+        correctTs= [-1]*len(coarseColumn)
+        coarseVal= 0.000000025 #coarse time value (40 Mhz, 25 ns)
+        fineVal=   0.00000000078125 #fine time value (1280 MHz, 0.78125 ns)
+        for iTs in range(0, len(coarseColumn)):
+            correctTs[iTs]= coarseColumn[iTs]*coarseVal + fineColumn[iTs]*fineVal
+            #if iTs:
+                #print correctTs[iTs]-correctTs[iTs-1], "\t ", correctTs[iTs], "\t", coarseColumn[iTs], "\t", fineColumn[iTs]
+
+        xdiff = np.diff(correctTs)
+        np.all(xdiff[0] == xdiff)
+        P= 1000000000 #display in ns
+        nsDeltas = [x * P for x in xdiff]
+        #centerRange= np.mean(nsDeltas)
+        centerRange= 476
+        windowsns= 30
+        minRange= centerRange-windowsns
+        maxRange= centerRange+windowsns
+        plt.hist(nsDeltas, 60, range=[minRange, maxRange], facecolor='blue', align='mid', alpha= 0.75)
+        #plt.hist(nsDeltas, 100, normed=True, facecolor='blue', align='mid', alpha=0.75)
+        #plt.xlim((min(nsDeltas), max(nsDeltas)))
+        plt.xlabel('Time (ns)')
+        plt.ylabel('Entries')
+        plt.title('Histogram DeltaTime')
+        plt.grid(True)
+
+        #Superimpose Gauss
+        mean = np.mean(nsDeltas)
+        variance = np.var(nsDeltas)
+        sigma = np.sqrt(variance)
+        x = np.linspace(min(nsDeltas), max(nsDeltas), 100)
+        plt.plot(x, mlab.normpdf(x, mean, sigma))
+
+        #Display plot
+        plt.show()
+
+
+    def saveFifoData(self, outList):
+        import csv
+        with open("output.csv", "wb") as f:
+            writer = csv.writer(f)
+            writer.writerows(outList)
 
 
 ##################################################################################################################################
 ##################################################################################################################################
 
     def initialize(self):
-        print "\nEUDUMMY INITIALIZING..."
+        print "\nTLU INITIALIZING..."
 
         # We need to pass it listenForTelescopeShutter , pulseDelay , pulseStretch , triggerPattern , DUTMask , ignoreDUTBusy , triggerInterval , thresholdVoltage
 
         #READ CONTENT OF EPROM VIA I2C
         self.getSN()
 
+        print "  Turning on software trigger veto"
+        cmd = int("0x1",16)
+        self.setTriggerVetoStatus(cmd)
 
         #
         # #SET DACs
@@ -545,13 +594,13 @@ class EUDETdummy:
 
         #
         # #ENABLE/DISABLE HDMI OUTPUTS
-        #self.DUTOutputs(0, True, False)
-        #self.DUTOutputs(1, True, False)
-        #self.DUTOutputs(2, True, False)
-        #self.DUTOutputs(3, True, False)
+        self.DUTOutputs(0, True, False)
+        self.DUTOutputs(1, True, False)
+        self.DUTOutputs(2, True, False)
+        self.DUTOutputs(3, True, False)
 
         ## ENABLE/DISABLE LEMO CLOCK OUTPUT
-        #self.enableClkLEMO(True, False)
+        self.enableClkLEMO(True, False)
 
         #
         # #Check clock status
@@ -568,20 +617,106 @@ class EUDETdummy:
         if resetCounters:
 	    self.resetCounters()
 
+        # # Get inputs status and counters
+        self.getChStatus()
+        self.getAllChannelsCounts()
+        #
+        # # Stop internal triggers until setup complete
+        cmd = int("0x0",16)
+        self.setInternalTrg(cmd)
+        #
+        # # Set pulse stretch
+        pulseStretch= 0x00000000
+        self.setPulseStretch(pulseStretch)
+        #
+        # # Set pulse delay
+        pulseDelay= 0x00
+        self.setPulseDelay(pulseDelay)
 
+        # # Set trigger pattern
+        #triggerPattern_low= 0xFFFEFFFE
+        #triggerPattern_high= 0xFFFFFFFF
+        triggerPattern_low= 0x00000002
+        triggerPattern_high= 0x00000000
+        self.setTrgPattern(triggerPattern_high, triggerPattern_low)
 
-        print "EUDUMMY INITIALIZED"
+        # # Set DUTs
+        DUTMask= 0xF
+        self.setDUTmask(DUTMask)
+        #
+        # # # Set mode
+        DUTMode= 0xFFFFFFFF
+        self.setMode(DUTMode)
+
+        # # # Set modifier
+        modifier = int("0xFF",16)
+        self.setModeModifier(modifier)
+        #
+        # # Set veto shutter
+        setVetoShutters=0
+        self.setVetoShutters(setVetoShutters)
+
+        # # Set veto by DUT
+        ignoreDUTBusy=0x0
+        self.setVetoDUT(ignoreDUTBusy)
+        self.getExternalVeto()
+        #
+        # # Set trigger interval (use 0 to disable internal triggers)
+        triggerInterval= 0000
+        self.setInternalTrg(triggerInterval)
+
+        print "TLU INITIALIZED"
 
 ##################################################################################################################################
 ##################################################################################################################################
     def start(self, logtimestamps=False):
-        print "EUDUMMY STARTING..."
+        print "TLU STARTING..."
 
-        print "  EUDUMMY RUNNING"
+        print "  FIFO RESET:"
+        FIFOcmd= 0x2
+        self.setFifoCSR(FIFOcmd)
+
+        eventFifoFillLevel= self.getFifoLevel()
+        cmd = int("0x000",16)
+        self.setInternalTrg(cmd)
+
+        if logtimestamps:
+            self.setRecordDataStatus(True)
+        else:
+            self.setRecordDataStatus(False)
+
+        # Pulse T0
+        self.pulseT0()
+
+        print "  Turning off software trigger veto"
+        cmd = int("0x0",16)
+        self.setTriggerVetoStatus(cmd)
+
+        print "TLU RUNNING"
 
 ##################################################################################################################################
 ##################################################################################################################################
-    def stop(self):
-        print "EUDUMMY STOPPING..."
+    def stop(self, saveD= False, plotD= False):
+        print "TLU STOPPING..."
 
-        print "  EUDUMMY STOPPED"
+        self.getPostVetoTrg()
+        eventFifoFillLevel= self.getFifoLevel()
+        print "  Turning on software trigger veto"
+        cmd = int("0x1",16)
+        self.setTriggerVetoStatus(cmd)
+
+        nFifoWords= int(eventFifoFillLevel)
+        fifoData= self.getFifoData(nFifoWords)
+
+        outList= self.parseFifoData(fifoData, nFifoWords/6, False)
+        #saveD= 0
+        #plotD= 0
+        if saveD:
+            self.saveFifoData(outList)
+        if plotD:
+            self.plotFifoData(outList)
+        #outFile = open('./test.txt', 'w')
+        #for iData in range (0, 30):
+    	#    outFile.write("%s\n" % fifoData[iData])
+        #    print hex(fifoData[iData])
+        print "TLU STOPPED"
