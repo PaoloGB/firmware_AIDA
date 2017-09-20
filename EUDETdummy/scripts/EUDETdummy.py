@@ -45,20 +45,20 @@ class EUDETdummy:
         self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
         self.IC6.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(0, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(0, 0xAA)# If output, set to XX
-        
+        self.IC6.setOutputs(0, 0x77)# If output, set to XX
+
         self.IC6.setInvertReg(1, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(1, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(1, 0xAA)# If output, set to XX
+        self.IC6.setOutputs(1, 0x77)# If output, set to XX
 
         self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
         self.IC7.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC7.setIOReg(0, 0x00)# 0= output, 1= input
-        self.IC7.setOutputs(0, 0x0F)# If output, set to XX
-        
+        self.IC7.setOutputs(0, 0x00)# If output, set to XX
+
         self.IC7.setInvertReg(1, 0x00)# 0= normal, 1= inverted
         self.IC7.setIOReg(1, 0x00)# 0= output, 1= input
-        self.IC7.setOutputs(1, 0x50)# If output, set to XX
+        self.IC7.setOutputs(1, 0xB0)# If output, set to XX
 
 
 ##################################################################################################################################
@@ -521,7 +521,7 @@ class EUDETdummy:
             pprint.pprint(outList)
         return outList
 
-    
+
 
 
 ##################################################################################################################################
@@ -535,7 +535,7 @@ class EUDETdummy:
         #READ CONTENT OF EPROM VIA I2C
         self.getSN()
 
-        
+
         #
         # #SET DACs
         targetV= -0.12
@@ -568,8 +568,8 @@ class EUDETdummy:
         if resetCounters:
 	    self.resetCounters()
 
-                
-        
+
+
         print "EUDUMMY INITIALIZED"
 
 ##################################################################################################################################

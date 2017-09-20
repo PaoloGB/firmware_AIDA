@@ -65,8 +65,8 @@ if __name__ == "__main__":
 
     logdata= True
     TLU.start(logdata)
-    time.sleep(5)
-    TLU.stop()
+    time.sleep(1.5)
+    TLU.stop(False, False)
     # prompt = MyPrompt()
     # prompt.prompt = '>> '
     # prompt.cmdloop("Welcome to miniTLU test console.\nType HELP for a list of commands.")
