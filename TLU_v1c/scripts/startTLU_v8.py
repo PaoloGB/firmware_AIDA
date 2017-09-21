@@ -10,7 +10,7 @@ import time
 # from ROOT import gROOT
 from datetime import datetime
 
-from TLU_v1e import TLU
+from TLU import TLU
 # Use to have interactive shell
 import cmd
 
@@ -65,8 +65,8 @@ if __name__ == "__main__":
 
     logdata= True
     TLU.start(logdata)
-    time.sleep(5)
-    TLU.stop(False, False)
+    time.sleep(0.2)
+    TLU.stop()
     # prompt = MyPrompt()
     # prompt.prompt = '>> '
     # prompt.cmdloop("Welcome to miniTLU test console.\nType HELP for a list of commands.")
