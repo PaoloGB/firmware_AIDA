@@ -11,6 +11,7 @@
 ## Backup files
 *.py~
 *.md~
+*.sh~
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
