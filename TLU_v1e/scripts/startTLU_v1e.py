@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     logdata= True
     TLU.start(logdata)
-    time.sleep(5)
+    time.sleep(0.5)
     TLU.stop(False, False)
     # prompt = MyPrompt()
     # prompt.prompt = '>> '
