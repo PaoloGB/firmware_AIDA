@@ -214,6 +214,13 @@ class TLU:
         print "\tFIFO CSR read back as:", hex(FifoCSR)
         return FifoCSR
 
+    def getFifoFlags(self):
+        # Useless?
+        FifoFLAG= self.hw.getNode("eventBuffer.EventFifoFillLevelFlags").read()
+        self.hw.dispatch()
+        print "\tFIFO FLAGS read back as:", hex(FifoFLAG)
+        return FifoFLAG
+
     def getInternalTrg(self):
         trigIntervalR = self.hw.getNode("triggerLogic.InternalTriggerIntervalR").read()
         self.hw.dispatch()
@@ -647,7 +654,7 @@ class TLU:
         # # # Set mode
         DUTMode= 0xFFFFFFFC ####
         self.setMode(DUTMode)
-        
+
         # # # Set modifier
         modifier = int("0xFF",16)
         self.setModeModifier(modifier)
@@ -675,7 +682,6 @@ class TLU:
         print "  FIFO RESET:"
         FIFOcmd= 0x2
         self.setFifoCSR(FIFOcmd)
-
         eventFifoFillLevel= self.getFifoLevel()
         cmd = int("0x000",16)
         self.setInternalTrg(cmd)
@@ -701,6 +707,8 @@ class TLU:
 
         self.getPostVetoTrg()
         eventFifoFillLevel= self.getFifoLevel()
+        self.getFifoFlags()
+        self.getFifoCSR()
         print "  Turning on software trigger veto"
         cmd = int("0x1",16)
         self.setTriggerVetoStatus(cmd)
