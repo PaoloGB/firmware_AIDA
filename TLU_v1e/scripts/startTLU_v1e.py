@@ -62,10 +62,10 @@ class MyPrompt(cmd.Cmd):
 if __name__ == "__main__":
     TLU= TLU("tlu", "file://./TLUconnection.xml")
     TLU.initialize()
-
+    print "HEY HEY"
     logdata= True
     TLU.start(logdata)
-    time.sleep(0.5)
+    time.sleep(5)
     TLU.stop(False, False)
     # prompt = MyPrompt()
     # prompt.prompt = '>> '

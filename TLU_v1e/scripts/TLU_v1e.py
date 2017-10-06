@@ -643,7 +643,7 @@ class TLU:
         # # Set trigger pattern
         #triggerPattern_low= 0xFFFEFFFE
         #triggerPattern_high= 0xFFFFFFFF
-        triggerPattern_low= 0x00000002
+        triggerPattern_low= 0x00000002 #0x00000002
         triggerPattern_high= 0x00000000
         self.setTrgPattern(triggerPattern_high, triggerPattern_low)
 
@@ -716,7 +716,7 @@ class TLU:
         nFifoWords= int(eventFifoFillLevel)
         fifoData= self.getFifoData(nFifoWords)
 
-        outList= self.parseFifoData(fifoData, nFifoWords/6, False)
+        outList= self.parseFifoData(fifoData, nFifoWords/6, True)
         #saveD= 0
         #plotD= 0
         if saveD:
