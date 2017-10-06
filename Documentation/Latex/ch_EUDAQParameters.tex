@@ -8,6 +8,7 @@ The parameters must be included in the INI or CONF file passed to the main windo
   \label{fig:EUDAQGui}
 \end{figure}\\
 Not all parameters are needed; if one of the parameters is not present in the files, the code will generally assume a default value, indicated in brackets in the following document \verb|[type, default]|.
+\section{INI file}
 \begin{description}
   \item[initid] \verb|[string, "0"]| Does not serve any purpose in the code but can be useful to identify configuration settings used in a specific run. EUDAQ will store this information in the run data.
   \item[ConnectionFile] \verb|[string, "file://./FMCTLU_connections.xml"]| Name of the xml file used to store the information required to communicate with the hardware, such as its IP address and the location of the address map. The default location indicates a file that must be located in the \texttt{bin} folder.
@@ -28,3 +29,14 @@ Not all parameters are needed; if one of the parameters is not present in the fi
   \item[CONFCLOCK] \verb|[bool, true]| If true, the clock chip Si5345 will be re-configured when the INIT button is pressed (see figure~fig.\ref{fig:EUDAQGui}). The chip is configured via \gls{i2c} interface using a specific text file (see next parameter). After a power cycle, the chip is not configured and must be reconfigured to operate the \gls{tlu} correctly.
   \item[CLOCK\_CFG\_FILE] \verb|[string, "./../user/eudet/misc/fmctlu_clock_config.txt"]| Name of the text file used to store the configuration values of the Si5345. The file can be generate using the Clockbuilder Pro software provided by \href{https://www.silabs.com/products/development-tools/software/clock}{SiLabs}.
 \end{description}
+
+\section{CONF file}
+\begin{description}
+  \item[confid] \verb|[string, "0"]| Does not serve any purpose in the code but can be useful to identify configuration settings used in a specific run. EUDAQ will store this information in the run data.
+  \item[verbose] \verb|[int, 0]| Defines the level of output messages from the \gls{tlu}. 0 indicates minimum output.
+  \item[HDMI1\_set] \verb|[positive int, 0b0001]| Defines the direction of the pins for the \verb|HDMI1| connector. A 1 indicates that the pin pair is an output, a 0 that they are an input. The order of the pairs is as follow:\\
+  bit 0= CONT, bit 1= SPARE, bit 2= TRIG, trig 3= BUSY. Note that the direction of the CLOCK pair is defined in a separate parameter.
+  \item[HDMI2\_set] \verb|[positive int, 0b0001]| Define the direction of the pins for the \verb|HDMI2| connector.
+  \item[HDMI3\_set] \verb|[positive int, 0b0001]| Define the direction of the pins for the \verb|HDMI3| connector.
+  \item[HDMI4\_set] \verb|[positive int, 0b0001]| Define the direction of the pins for the \verb|HDMI4| connector.
+\end{description} 
