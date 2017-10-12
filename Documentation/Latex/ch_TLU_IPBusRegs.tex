@@ -154,18 +154,18 @@
 \end{tabular}
 \end{table}
 
-\begin{description}
+\begin{description}\label{ch:IPBus_DUT}
   \item[version] Returns the current version of firmware used to program the \gls{tlu}
   \item[------------------------]
   \item[DUTINTERFACES]
   \item[DUTMaskW] Writing to this register allows to define which \gls{dut}s are active when in AIDA mode. The lower 4 bits of the register can be used to define the status of the \gls{dut}s: 1 for active, 0 for masked. \verb|hdmi1| is defined by bit 0, \verb|hdmi2| is defined by bit 1, \verb|hdmi3| is defined by bit 2, \verb|hdmi4| is defined by bit 3.
   \item[IgnoreDUTBusyW] Writing to this register allows to ignore the busy signal from a particular \gls{dut} while in AIDA mode. The lower 4 bits are used to define the status for each device. A 1 indicates that the logic should ignore busy signals from the specific \gls{dut}.
   \item[IgnoreShutterVetoW] The \gls{lsb} of this register can be written to define whether the \gls{dut} should ignore the shutter veto signal. Normally, when the shutter signal is asserted the \gls{dut} reports busy. If this bit is flag the \gls{dut} will ignore the shutter signal.
-  \item[DUTInterfaceModeW] Write register to define the mode of operation for a \gls{dut}. Two bits per device can be used to define the mode; currently only two modes are available (AIDA, EUDET).\\
+  \item[DUTInterfaceModeW] Write register to define the mode of operation for a \gls{dut}. Two bits per device can be used to define the mode; currently only two modes are available (AIDA, EUDET) but the second but is reserved for additional modes introduced in the future.\\
       The bit pairs are packed from the \gls{lsb} starting with \verb|hdmi1| (bits 0, 1), \verb|hdmi2| (bits 2, 3), \verb|hdmi3| (bits 4, 5),  \verb|hdmi4| (bits 6, 7).
       \begin{itemize}
-        \item bit pair X0: EUDET
-        \item bit pair X1: AIDA
+        \item bit pair \texttt{X0}: EUDET
+        \item bit pair \texttt{X1}: AIDA
       \end{itemize}
   \item[DUTInterfaceModeModifierW] Write register. This register only affects the EUDET mode of operation. For each \gls{dut} two bits can be configured although cyrrently only the lower of the pair is considere. The bit packing is done in a manner similar to the DUTInterfaceMode. Set bit high to allow asynchronous veto using \verb|DUT_CLK| when in EUDET mode.
   \item[DUTInterfaceModeR] Read the content of the DUTInterfaceMode register.
@@ -236,7 +236,7 @@
   \item[ThrCount5R] Read register. Returns the number of pulses above threshold for the trigger input.
 \end{description}
 
-\begin{description}\label{ch:triggerLogic}
+\begin{description}\label{ch:triggerLogicAdd}
   \item[------------------------]
   \item[TRIGGERLOGIC]
   \item[PostVetoTriggersR] Read register. Returns the number of triggers recorded in the \gls{tlu} after the veto is applied. These are the triggers actually sent to the \gls{dut}s.

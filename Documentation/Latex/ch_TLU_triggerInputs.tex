@@ -23,10 +23,10 @@ The status register (SerdesRst) is as follows:
 9 bits are used to determine trigger edges. 8 are from the deserializers, 1 is added as the LSB and is the MSB from the previous word.
 
 \section{Trigger logic}\label{ch:triggerLogic}
-The TLU has six trigger inputs than can be used to generate a valid trigger event. The number of possible different trigger combinations is $2^6= 64$ so a 64-bit word can be used to decide the valid combinations. In the hardware the 64-bit word is split into two 32-bit words and the rules to generate the trigger can be specified by the user by writing in the two 32-bit registers \verb|TriggerPattern_highW| and \verb|TriggerPattern_lowW|: the first stores the 32 most significative bits of the trigger word, the latter stores the least significative bits.\\
+The TLU has six trigger inputs than can be used to generate a valid trigger event. The number of possible different trigger combinations is $2^6= 64$ so a 64-bit word can be used to decide the valid combinations. In the hardware the 64-bit word is split into two 32-bit words (indicated as \gls{msb} and \gls{lsb} word) and the rules to generate the trigger can be specified by the user by writing in the two 32-bit registers \verb|TriggerPattern_highW| and \verb|TriggerPattern_lowW|: the first stores the 32 most significative bits of the trigger word, the latter stores the least significative bits.\\
 The user can select any combination of the trigger inputs and declare it a valid trigger pattern by setting a 1 in the corresponding trigger configuration word.
 Tables~\ref{tab:trigconfigLow} and ~\ref{tab:trigconfigHigh} show an example of how to determine the trigger configuration words: whenever a valid trigger combination is encountered, the user should put a 1 in the corresponding row under the PATTERN column. The pattern thus obtained is the required word to write in the configuration register.\\
-It is important to note that this solution allows the user to set veto pattern as well: for instance if only word 31 from table~\ref{tab:trigconfigLow} were picked, then the \gls{tlu} would only register a trigger when the combination $\overline{I_{5}}$ + $I_{4}$ + $I_{3}$ + $I_{2}$ + $I_{1}$ + $I_{0}$ was presented at its inputs. In other words, in this specific case $I_{5}$ would act as a veto signal.
+It is important to note that this solution allows the user to set veto pattern as well: for instance if only word 31 from table~\ref{tab:trigconfigLow} were picked, then the \gls{tlu} would only register a trigger when the combination $\overline{I_{5}}$ * $I_{4}$ * $I_{3}$ * $I_{2}$ * $I_{1}$ * $I_{0}$ was presented at its inputs. In other words, in this specific case $I_{5}$ would act as a veto signal and the \gls{tlu} would \textbf{not} produce a trigger if $I_{5}$=1.
 
 % Please add the following required packages to your document preamble:
 % \usepackage{multirow}
@@ -122,9 +122,13 @@ DEC & I5 & I4 & I3 & I2 & I1 & I0 & PATTERN & \multicolumn{1}{l|}{\begin{tabular
     A ``1'' in the logic table means that the corresponding input must be active to produce a valid trigger. Similarly, a ``0'' indicates that the corresponding input must be inactive (i.e. is a veto, not an ignore). Any change in input configuration will cause the logic to re-assess the trigger status. The following section gives a brief example.\\
 \end{alertinfo}
 
+\begin{alertinfo}{Bit 0 meaning}
+    A 1 in the lowest bit of the \gls{lsb} word indicates that $\overline{I_{5}}$ * $\overline{I_{4}}$ * $\overline{I_{3}}$ * $\overline{I_{2}}$ * $\overline{I_{1}}$ * $\overline{I_{0}}$ is a valid trigger combination, so the \gls{tlu} will produce a trigger when all the inputs are unactive (i.e. even if all the inputs are unplugged). Apart from very specific cases, this is generally not a desired behaviour.
+\end{alertinfo}
+
 \subsubsection{Example}
 In this example we have connected a pulser to two inputs of the \gls{tlu}, namely input 0 and input 4. The inputs fire with a small, random delay with respect to each other.\\
-In order to ensure that the signals overlap adequately, we use the \emph{stretch} register (see chapter~\ref{ch:triggerLogic}) to increase the length of the pulses: we extend \emph{in0} to 10 clock cycles and \emph{in4} to 8 clock cycles. The resulting signals are shown in figure~\ref{Fig:exampleExtendedTriggers}.
+In order to ensure that the signals overlap adequately, we use the \emph{stretch} register (see chapter~\ref{ch:triggerLogic}) to increase the length of the pulses: we extend \emph{in0} to 10 clock cycles and \emph{in4} to 8 clock cycles, where the clock has a frequency of 160~MHz. The resulting signals are shown in figure~\ref{Fig:exampleExtendedTriggers}.
 \begin{figure}
   \centering
   \includegraphics[width=.90\textwidth]{./Images/Initial.png}
