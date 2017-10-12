@@ -135,8 +135,11 @@ BEGIN
 
       s_strobe_4x_logic_d1 <= strobe_4x_logic_i;
 
+      --busy_o <= ((not ignore_shutter_veto_i ) and (not shutter_to_dut_i)) or
+      --          ((dut_busy_i and DUT_mask_i ) and (not ignore_dut_busy_i) );
+                
       busy_o <= ((not ignore_shutter_veto_i ) and (not shutter_to_dut_i)) or
-                ((dut_busy_i and DUT_mask_i ) and (not ignore_dut_busy_i) );
+                ( (dut_busy_i and DUT_mask_i )  );
 
       dut_clk_o <= s_dut_clk ;
       dut_trigger_o <= DUT_mask_i and s_trigger_out;

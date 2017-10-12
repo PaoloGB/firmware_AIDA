@@ -324,8 +324,8 @@ BEGIN
     s_DUT_aida_eudet_mode(dut) <= s_DUT_interface_mode(2*dut);
     s_dut_enable_veto_eudet(dut) <= s_DUT_interface_mode_modifier(2*dut);
     
-    -- Produce "OR" of veto/busy signals from DUTs
-    s_intermediate_busy_or(dut+1) <= s_intermediate_busy_or(dut) or s_dut_veto(dut);
+    -- Produce "OR" of veto/busy signals from DUTs, take into account IGNORE BUSY bit
+    s_intermediate_busy_or(dut+1) <= s_intermediate_busy_or(dut) or ( s_dut_veto(dut) and (not s_DUT_ignore_busy(dut) ) );
     
   end generate dut_interfaces;
 
