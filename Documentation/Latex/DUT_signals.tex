@@ -1,2 +1,2 @@
 \chapter{DUT signals}\label{ch:DUTsignals}
-In the old firmware the clock signals (\verb|dut_clk_n_o, dut_clk_p_o|) were configured as input/output. The new hardware has the lines separated so \verb|dut_clk_p_i| is the input vector and \verb|dut_clk_p_o| the output one.\\ 
+In the old versions of the \gls{tlu} the direction of the signals on the \verb|HDMI*| connectors were pre-defined. The new hardware has separate lines for signals going into the \gls{tlu} and signals out of the \gls{tlu}. See section~\ref{ch:hwDUT} for further details.\\ 
