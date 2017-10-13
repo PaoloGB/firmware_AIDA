@@ -5,8 +5,9 @@ Board \brd is an evolution of the miniTLU designed at the \gls{uob}. The board s
 \subsubsection{FMC}
 The board must be plugged onto a \gls{fmc} carrier board with an \gls{fpga} in order to function correctly. The connection is achieved using a low pin count \gls{fmc} connector. The list of the pins used is provided in appendix at page~\pageref{ch:appendix}.\\
 
-\subsubsection{\gls{dut}}\label{ch:dut}
-The \gls{dut}s are connected to the \gls{tlu} using standard size \gls{hdmi} connectors\footnote{In the miniTLU hardware there were mini\gls{hdmi} connectors.}. In this version of the hardware, up to four \gls{dut}s can be connected to the board. In this document the connectors will be referred to as \verb|HDMI_DUT_1|, \verb|HDMI_DUT_2|, \verb|HDMI_DUT_3| and \verb|HDMI_DUT_4|.\\
+\subsubsection{Device under test}\label{ch:dut}
+The \gls{dut}s are connected to the \gls{tlu} using standard size \gls{hdmi} connectors\footnote{In the miniTLU hardware there were mini\gls{hdmi} connectors.}.\\
+In this version of the hardware, up to four \gls{dut}s can be connected to the board. In this document the connectors will be referred to as \verb|HDMI1|, \verb|HDMI2|, \verb|HDMI3| and \verb|HDMI4|.\\
 The connectors expect 3.3~V \gls{lvds} signals and are bi-directional, i.e. any differential pair can be configured to be an output (signal from the TLU to the DUT) or an input (signals from the DUT to the TLU) by using half-duplex line transceivers. Figure~\ref{fig:LVDSTransceiver} illustrates how the differential pairs are connected to the transceivers.
 \begin{alertinfo}{Note}
     The input part of the transceiver is configured to be always on. This means that signals going \emph{into} the \gls{tlu} are always routed to the logic (\gls{fpga}). By contrast, the output transceivers have to be enabled and are off by default: signal sent from the logic to the \gls{dut}s cannot reach the devices unless the corresponding enable signal is active.
