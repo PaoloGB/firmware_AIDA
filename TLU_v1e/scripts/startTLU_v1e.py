@@ -14,25 +14,91 @@ from TLU_v1e import TLU
 # Use to have interactive shell
 import cmd
 
+# Use to have config file parser
+import ConfigParser
+
+
+## Define class that creates the command user inteface
 class MyPrompt(cmd.Cmd):
+
+    # def do_initialise(self, args):
+    #     """Processes the INI file and writes its values to the TLU. To use a specific file type:\n
+    #     parseIni path/to/filename.ini\n
+    #     (without quotation marks)"""
+    # 	print "COMMAND RECEIVED: PARSE INI"
+    # 	parsed_cfg= self.open_cfg_file(args, "/users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/scripts/localIni.ini")
+    #     try:
+    #         theID = parsed_cfg.getint("Producer.fmctlu", "initid")
+    #         print theID
+    #         theSTRING= parsed_cfg.get("Producer.fmctlu", "ConnectionFile")
+    #         print theSTRING
+    #         #TLU= TLU("tlu", theSTRING, parsed_cfg)
+    #     except IOError:
+    #         print "\t Could not retrieve INI data."
+    #         return
+
+
+    def do_configure(self, args):
+        """Processes the CONF file and writes its values to the TLU. To use a specific file type:\n
+        parseIni path/to/filename.conf\n
+        (without quotation marks)"""
+    	print "COMMAND RECEIVED: PARSE CONFIG"
+    	#self.testme()
+        parsed_cfg= self.open_cfg_file(args, "/users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/scripts/localConf.conf")
+        try:
+            theID = parsed_cfg.getint("Producer.fmctlu", "confid")
+            print "\t", theID
+            TLU.configure(parsed_cfg)
+        except IOError:
+            print "\t Could not retrieve CONF data."
+            return
+
 
 
     def do_startRun(self, args):
-	"""Starts the TLU run"""
-	print "COMMAND RECEIVED: STARTING TLU RUN"
-	startTLU( uhalDevice = self.hw, pychipsBoard = self.board,  writeTimestamps = ( options.writeTimestamps == "True" ) )
-	#print self.hw
+        """Starts the TLU run"""
+    	print "COMMAND RECEIVED: STARTING TLU RUN"
+    	startTLU( uhalDevice = self.hw, pychipsBoard = self.board,  writeTimestamps = ( options.writeTimestamps == "True" ) )
+    	#print self.hw
 
     def do_stopRun(self, args):
-	"""Stops the TLU run"""
-	print "COMMAND RECEIVED: STOP TLU RUN"
-	#stopTLU( uhalDevice = hw, pychipsBoard = board )
+    	"""Stops the TLU run"""
+    	print "COMMAND RECEIVED: STOP TLU RUN"
+    	#stopTLU( uhalDevice = hw, pychipsBoard = board )
 
     def do_quit(self, args):
         """Quits the program."""
         print "COMMAND RECEIVED: QUITTING SCRIPT."
         #raise SystemExit
 	return True
+
+    def testme(self):
+        print "This is a test"
+
+    def open_cfg_file(self, args, default_file):
+        # Parse the user arguments, attempts to opent the file and performs a (minimal)
+        # check to verify the file exists (but not that its content is correct)
+
+        arglist = args.split()
+        if len(arglist) == 0:
+            print "\tno file specified, using default"
+            fileName= default_file
+            print "\t", fileName
+        else:
+            fileName= arglist[0]
+        if len(arglist) > 1:
+            print "\tinvalid: too many arguments. Max 1."
+            return
+
+        parsed_file = ConfigParser.RawConfigParser()
+        try:
+            with open(fileName) as f:
+                parsed_file.readfp(f)
+                print "\t", parsed_file.sections()
+        except IOError:
+            print "\t Error while parsing the specified file."
+            return
+        return parsed_file
 
 # # Override methods in Cmd object ##
 #     def preloop(self):
@@ -60,13 +126,22 @@ class MyPrompt(cmd.Cmd):
 
 #################################################
 if __name__ == "__main__":
-    TLU= TLU("tlu", "file://./TLUconnection.xml")
-    TLU.initialize()
-    print "HEY HEY"
-    logdata= True
-    TLU.start(logdata)
-    time.sleep(5)
-    TLU.stop(False, False)
-    # prompt = MyPrompt()
-    # prompt.prompt = '>> '
-    # prompt.cmdloop("Welcome to miniTLU test console.\nType HELP for a list of commands.")
+    print "TLU v1E MAIN"
+    prompt = MyPrompt()
+    prompt.prompt = '>> '
+
+    parsed_ini= prompt.open_cfg_file("", "./localIni.ini")
+    TLU= TLU("tlu", "file://./TLUconnection.xml", parsed_ini)
+
+    parsed_cfg= prompt.open_cfg_file("", "./localIni.ini")
+    ###TLU.configure(parsed_cfg)
+    ###logdata= True
+    ###TLU.start(logdata)
+    ###time.sleep(5)
+    ###TLU.stop(False, False)
+
+    # Start interactive prompt
+    print "=+=================================================================="
+    print "==========================TLU TEST CONSOLE=========================="
+    print "+==================================================================="
+    prompt.cmdloop("Type 'help' for a list of commands.")

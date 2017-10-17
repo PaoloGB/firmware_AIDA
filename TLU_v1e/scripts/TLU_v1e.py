@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import uhal;
 import pprint;
+import ConfigParser
 from FmcTluI2c import *
 from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
@@ -9,15 +10,29 @@ from PCA9539PW import PCA9539PW # Library for serial line expander
 
 class TLU:
     """docstring for TLU"""
-    def __init__(self, dev_name, man_file):
+    def __init__(self, dev_name, man_file, parsed_cfg):
+        section_name= "Producer.fmctlu"
         self.dev_name = dev_name
+
+        #man_file= parsed_cfg.get(section_name, "ConnectionFile")
         self.manager= uhal.ConnectionManager(man_file)
         self.hw = self.manager.getDevice(self.dev_name)
-        self.nDUTs= 4 #Number of DUT connectors
-        self.nChannels= 6 #Number of trigger inputs
-        self.VrefInt= 2.5 #Internal DAC voltage reference
-        self.VrefExt= 1.3 #External DAC voltage reference
-        self.intRefOn= False #Internal reference is OFF by default
+
+        #self.nDUTs= 4 #Number of DUT connectors
+        self.nDUTs= parsed_cfg.getint(section_name, "nDUTs")
+
+        #self.nChannels= 6 #Number of trigger inputs
+        self.nChannels= parsed_cfg.getint(section_name, "nTrgIn")
+
+        #self.VrefInt= 2.5 #Internal DAC voltage reference
+        self.VrefInt= parsed_cfg.getfloat(section_name, "VRefInt")
+
+        #self.VrefExt= 1.3 #External DAC voltage reference
+        self.VrefExt= parsed_cfg.getfloat(section_name, "VRefExt")
+
+        #self.intRefOn= False #Internal reference is OFF by default
+        self.intRefOn= bool(parsed_cfg.get(section_name, "intRefOn"))
+
 
         self.fwVersion = self.hw.getNode("version").read()
         self.hw.dispatch()
@@ -30,19 +45,32 @@ class TLU:
         enableCore= True #Only need to run this once, after power-up
         self.enableCore()
 
-        # Instantiate clock chip
-        self.zeClock=si5345(self.TLU_I2C, 0x68)
+        # Instantiate clock chip and configure it (if necessary)
+        #self.zeClock=si5345(self.TLU_I2C, 0x68)
+        clk_addr= int(parsed_cfg.get(section_name, "I2C_CLK_Addr"), 16)
+        self.zeClock=si5345(self.TLU_I2C, clk_addr)
         res= self.zeClock.getDeviceVersion()
+        if (int(parsed_cfg.get(section_name, "CONFCLOCK"), 16)):
+            #clkRegList= self.zeClock.parse_clk("./../../bitFiles/TLU_CLK_Config_v1e.txt")
+            clkRegList= self.zeClock.parse_clk(parsed_cfg.get(section_name, "CLOCK_CFG_FILE"))
+            self.zeClock.writeConfiguration(clkRegList)######
+
         self.zeClock.checkDesignID()
 
         # Instantiate DACs and configure them to use reference based on TLU setting
-        self.zeDAC1=AD5665R(self.TLU_I2C, 0x13)
-        self.zeDAC2=AD5665R(self.TLU_I2C, 0x1F)
+        #self.zeDAC1=AD5665R(self.TLU_I2C, 0x13)
+        #self.zeDAC2=AD5665R(self.TLU_I2C, 0x1F)
+        dac_addr1= int(parsed_cfg.get(section_name, "I2C_DAC1_Addr"), 16)
+        self.zeDAC1=AD5665R(self.TLU_I2C, dac_addr1)
+        dac_addr2= int(parsed_cfg.get(section_name, "I2C_DAC2_Addr"), 16)
+        self.zeDAC2=AD5665R(self.TLU_I2C, dac_addr2)
         self.zeDAC1.setIntRef(self.intRefOn)
         self.zeDAC2.setIntRef(self.intRefOn)
 
         # Instantiate the serial line expanders and configure them to default values
-        self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
+        #self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
+        exp1_addr= int(parsed_cfg.get(section_name, "I2C_EXP1_Addr"), 16)
+        self.IC6=PCA9539PW(self.TLU_I2C, exp1_addr)
         self.IC6.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(0, 0x00)# 0= output, 1= input
         self.IC6.setOutputs(0, 0x77)# If output, set to XX
@@ -51,7 +79,9 @@ class TLU:
         self.IC6.setIOReg(1, 0x00)# 0= output, 1= input
         self.IC6.setOutputs(1, 0x77)# If output, set to XX
 
-        self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
+        #self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
+        exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2_Addr"), 16)
+        self.IC7=PCA9539PW(self.TLU_I2C, exp2_addr)
         self.IC7.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC7.setIOReg(0, 0x00)# 0= output, 1= input
         self.IC7.setOutputs(0, 0x00)# If output, set to XX
@@ -224,7 +254,7 @@ class TLU:
     def getInternalTrg(self):
         trigIntervalR = self.hw.getNode("triggerLogic.InternalTriggerIntervalR").read()
         self.hw.dispatch()
-        print "\tTrigger frequency read back as:", trigIntervalR, "Hz"
+        print "\tInternal interval read back as:", trigIntervalR
         return trigIntervalR
 
     def getMode(self):
@@ -398,8 +428,9 @@ class TLU:
             internalTriggerFreq = 0
             print "\tdisabled"
         else:
-            internalTriggerFreq = 160000.0/triggerInterval
-            print "\t  Setting:", internalTriggerFreq, "Hz"
+            internalTriggerFreq = 160000000.0/triggerInterval
+            print "\tRequired internal trigger frequency:", triggerInterval, "Hz"
+            print "\tSetting internal interval to:", internalTriggerFreq
         self.hw.getNode("triggerLogic.InternalTriggerIntervalW").write(int(internalTriggerFreq))
         self.hw.dispatch()
         self.getInternalTrg()
@@ -416,14 +447,16 @@ class TLU:
         self.hw.dispatch()
         self.getModeModifier()
 
-    def setPulseDelay(self, pulseDelay):
-        print "  TRIGGER DELAY SET TO", hex(pulseDelay), "[Units= 160MHz clock, 5-bit values (one per input) packed in to 32-bit word]"
+    def setPulseDelay(self, inArray):
+        print "  TRIGGER DELAY SET TO", inArray, "[Units= 160MHz clock, 5-bit values (one per input) packed in to 32-bit word]"
+        pulseDelay= self.packBits(inArray)
         self.hw.getNode("triggerLogic.PulseDelayW").write(pulseDelay)
         self.hw.dispatch()
         self.getPulseDelay()
 
-    def setPulseStretch(self, pulseStretch):
-        print "  INPUT COINCIDENCE WINDOW SET TO", hex(pulseStretch) ,"[Units= 160MHz clock cycles, 5-bit values (one per input) packed in to 32-bit word]"
+    def setPulseStretch(self, inArray):
+        print "  INPUT COINCIDENCE WINDOW SET TO", inArray ,"[Units= 160MHz clock cycles, 5-bit values (one per input) packed in to 32-bit word]"
+        pulseStretch= self.packBits(inArray)
         self.hw.getNode("triggerLogic.PulseStretchW").write(pulseStretch)
         self.hw.dispatch()
         self.getPulseStretch()
@@ -485,6 +518,19 @@ class TLU:
         print "\tTarget V:", Vtarget
         dacValue = 0xFFFF * (Vdac / Vref)
         DACtarget.writeDAC(int(dacValue), channel, True)
+
+    def packBits(self, raw_values):
+        packed_bits= 0
+        if (len(raw_values) != self.nChannels):
+            print "Error (packBits): wrong number of elements in array"
+        else:
+            for idx, iCh in enumerate(raw_values):
+                tmpint= iCh << idx*5
+                packed_bits= packed_bits | tmpint
+        print "\tPacked =", hex(packed_bits)
+        return packed_bits
+
+
 
     def parseFifoData(self, fifoData, nEvents, verbose):
         #for index in range(0, len(fifoData)-1, 6):
@@ -576,14 +622,12 @@ class TLU:
             writer = csv.writer(f)
             writer.writerows(outList)
 
-
 ##################################################################################################################################
 ##################################################################################################################################
 
-    def initialize(self):
+    def configure(self, parsed_cfg):
         print "\nTLU INITIALIZING..."
-
-        # We need to pass it listenForTelescopeShutter , pulseDelay , pulseStretch , triggerPattern , DUTMask , ignoreDUTBusy , triggerInterval , thresholdVoltage
+        section_name= "Producer.fmctlu"
 
         #READ CONTENT OF EPROM VIA I2C
         self.getSN()
@@ -592,12 +636,14 @@ class TLU:
         cmd = int("0x1",16)
         self.setTriggerVetoStatus(cmd)
 
-        #
+
         # #SET DACs
-        targetV= -0.12
-        DACchannel= 7
-        self.writeThreshold(self.zeDAC1, targetV, DACchannel, )
-        self.writeThreshold(self.zeDAC2, targetV, DACchannel, )
+        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold0"), 1, )
+        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold1"), 0, )
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold2"), 3, )
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold3"), 2, )
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold4"), 1, )
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold5"), 0, )
 
         #
         # #ENABLE/DISABLE HDMI OUTPUTS
@@ -607,7 +653,7 @@ class TLU:
         self.DUTOutputs(3, True, False)
 
         ## ENABLE/DISABLE LEMO CLOCK OUTPUT
-        self.enableClkLEMO(True, False)
+        self.enableClkLEMO(parsed_cfg.getint(section_name, "LEMOclk"), False)
 
         #
         # #Check clock status
@@ -627,49 +673,59 @@ class TLU:
         # # Get inputs status and counters
         self.getChStatus()
         self.getAllChannelsCounts()
-        #
+
         # # Stop internal triggers until setup complete
         cmd = int("0x0",16)
         self.setInternalTrg(cmd)
-        #
-        # # Set pulse stretch
-        pulseStretch= 0x00000000
-        self.setPulseStretch(pulseStretch)
-        #
-        # # Set pulse delay
-        pulseDelay= 0x00
-        self.setPulseDelay(pulseDelay)
+
+        # # Set pulse stretches
+        str0= parsed_cfg.getint(section_name, "in0_STR")
+        str1= parsed_cfg.getint(section_name, "in1_STR")
+        str2= parsed_cfg.getint(section_name, "in2_STR")
+        str3= parsed_cfg.getint(section_name, "in3_STR")
+        str4= parsed_cfg.getint(section_name, "in4_STR")
+        str5= parsed_cfg.getint(section_name, "in5_STR")
+        self.setPulseStretch([str0, str1, str2, str3, str4, str5])
+
+        # # Set pulse delays
+        del0= parsed_cfg.getint(section_name, "in0_DEL")
+        del1= parsed_cfg.getint(section_name, "in1_DEL")
+        del2= parsed_cfg.getint(section_name, "in2_DEL")
+        del3= parsed_cfg.getint(section_name, "in3_DEL")
+        del4= parsed_cfg.getint(section_name, "in4_DEL")
+        del5= parsed_cfg.getint(section_name, "in5_DEL")
+        self.setPulseDelay([del0, del1, del2, del3, del4, del5])
 
         # # Set trigger pattern
-        #triggerPattern_low= 0xFFFEFFFE
-        #triggerPattern_high= 0xFFFFFFFF
-        triggerPattern_low= 0x00000002 #0x00000002
-        triggerPattern_high= 0x00000000
+        triggerPattern_low= int(parsed_cfg.get(section_name, "trigMaskLo"), 16)
+        triggerPattern_high= int(parsed_cfg.get(section_name, "trigMaskHi"), 16)
         self.setTrgPattern(triggerPattern_high, triggerPattern_low)
 
-        # # Set DUTs
-        DUTMask= 0xF
+        # # Set active DUTs
+        DUTMask= int(parsed_cfg.get(section_name, "DutMask"), 16)
         self.setDUTmask(DUTMask)
-        #
-        # # # Set mode
-        DUTMode= 0xFFFFFFFC ####
+
+        # # Set mode (AIDA, EUDET)
+        DUTMode= int(parsed_cfg.get(section_name, "DUTMaskMode"), 16)
         self.setMode(DUTMode)
 
-        # # # Set modifier
-        modifier = int("0xFF",16)
+        # # Set modifier
+        modifier = int(parsed_cfg.get(section_name, "DUTMaskModeModifier"), 16)
         self.setModeModifier(modifier)
-        #
+
         # # Set veto shutter
-        setVetoShutters=0
+        setVetoShutters = int(parsed_cfg.get(section_name, "DUTIgnoreShutterVeto"), 16)
         self.setVetoShutters(setVetoShutters)
 
         # # Set veto by DUT
-        ignoreDUTBusy=0x0
+        ignoreDUTBusy = int(parsed_cfg.get(section_name, "DUTIgnoreBusy"), 16)
         self.setVetoDUT(ignoreDUTBusy)
+
+        print "  Check external veto:"
         self.getExternalVeto()
-        #
+
         # # Set trigger interval (use 0 to disable internal triggers)
-        triggerInterval= 0000
+        triggerInterval= parsed_cfg.getint(section_name, "InternalTriggerFreq")
         self.setInternalTrg(triggerInterval)
 
         print "TLU INITIALIZED"
