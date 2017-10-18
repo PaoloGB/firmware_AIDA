@@ -53,17 +53,18 @@ class MyPrompt(cmd.Cmd):
             print "\t Could not retrieve CONF data."
             return
 
-
-
     def do_startRun(self, args):
         """Starts the TLU run"""
     	print "COMMAND RECEIVED: STARTING TLU RUN"
-    	startTLU( uhalDevice = self.hw, pychipsBoard = self.board,  writeTimestamps = ( options.writeTimestamps == "True" ) )
+    	#startTLU( uhalDevice = self.hw, pychipsBoard = self.board,  writeTimestamps = ( options.writeTimestamps == "True" ) )
+        logdata= True
+        TLU.start(logdata)
     	#print self.hw
 
     def do_stopRun(self, args):
     	"""Stops the TLU run"""
     	print "COMMAND RECEIVED: STOP TLU RUN"
+        TLU.stop(False, False)
     	#stopTLU( uhalDevice = hw, pychipsBoard = board )
 
     def do_quit(self, args):
@@ -133,7 +134,6 @@ if __name__ == "__main__":
     parsed_ini= prompt.open_cfg_file("", "./localIni.ini")
     TLU= TLU("tlu", "file://./TLUconnection.xml", parsed_ini)
 
-    parsed_cfg= prompt.open_cfg_file("", "./localIni.ini")
     ###TLU.configure(parsed_cfg)
     ###logdata= True
     ###TLU.start(logdata)

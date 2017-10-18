@@ -18,6 +18,9 @@ class TLU:
         self.manager= uhal.ConnectionManager(man_file)
         self.hw = self.manager.getDevice(self.dev_name)
 
+        # #Get Verbose setting
+        self.verbose= parsed_cfg.getint(section_name, "verbose")
+
         #self.nDUTs= 4 #Number of DUT connectors
         self.nDUTs= parsed_cfg.getint(section_name, "nDUTs")
 
@@ -64,8 +67,8 @@ class TLU:
         self.zeDAC1=AD5665R(self.TLU_I2C, dac_addr1)
         dac_addr2= int(parsed_cfg.get(section_name, "I2C_DAC2_Addr"), 16)
         self.zeDAC2=AD5665R(self.TLU_I2C, dac_addr2)
-        self.zeDAC1.setIntRef(self.intRefOn)
-        self.zeDAC2.setIntRef(self.intRefOn)
+        self.zeDAC1.setIntRef(self.intRefOn, self.verbose)
+        self.zeDAC2.setIntRef(self.intRefOn, self.verbose)
 
         # Instantiate the serial line expanders and configure them to default values
         #self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
@@ -93,7 +96,34 @@ class TLU:
 
 ##################################################################################################################################
 ##################################################################################################################################
-    def DUTOutputs(self, dutN, enable=False, verbose=False):
+    def DUTOutputs_old(self, dutN, enable=False, verbose=False):
+        ## Set the status of the transceivers for a specific HDMI connector. When enable= False the transceivers are disabled and the
+        ## connector cannot send signals from FPGA to the outside world. When enable= True then signals from the FPGA will be sent out to the HDMI.
+        ## NOTE: the other direction is always enabled, i.e. signals from the DUTs are always sent to the FPGA.
+        ## NOTE: CLK direction must be defined separately using DUTClkSrc
+        ## NOTE: This version changes all the pins together. Use DUTOutputs to control individual pins.
+
+        if (dutN < 0) | (dutN> (self.nDUTs-1)):
+            print "\tERROR: DUTOutputs. The DUT number must be comprised between 0 and ", self.nDUTs-1
+            return -1
+        bank= dutN//2 # DUT0 and DUT1 are on bank 0. DUT2 and DUT3 on bank 1
+        nibble= dutN%2 # DUT0 and DUT2 are on nibble 0. DUT1 and DUT3 are on nibble 1
+        print "  Setting DUT:", dutN, "to", enable
+        if (verbose > 1):
+            print "\tBank", bank, "Nibble", nibble
+        res= self.IC6.getIOReg(bank)
+        oldStatus= res[0]
+        mask= 0xF << 4*nibble
+        newStatus= oldStatus & (~mask)
+        if (not enable): # we want to write 0 to activate the outputs so check opposite of "enable"
+            newStatus |= mask
+        self.IC6.setIOReg(bank, newStatus)
+
+        if verbose:
+            print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
+        return newStatus
+
+    def DUTOutputs(self, dutN, enable=0x7, verbose=False):
         ## Set the status of the transceivers for a specific HDMI connector. When enable= False the transceivers are disabled and the
         ## connector cannot send signals from FPGA to the outside world. When enable= True then signals from the FPGA will be sent out to the HDMI.
         ## NOTE: the other direction is always enabled, i.e. signals from the DUTs are always sent to the FPGA.
@@ -104,18 +134,22 @@ class TLU:
             return -1
         bank= dutN//2 # DUT0 and DUT1 are on bank 0. DUT2 and DUT3 on bank 1
         nibble= dutN%2 # DUT0 and DUT2 are on nibble 0. DUT1 and DUT3 are on nibble 1
-        print "  Setting DUT:", dutN, "to", enable
-        if verbose:
+        print "  Setting DUT:", dutN, "pins status to", hex(enable)
+        if (verbose > 1):
             print "\tBank", bank, "Nibble", nibble
         res= self.IC6.getIOReg(bank)
         oldStatus= res[0]
         mask= 0xF << 4*nibble
-        newStatus= oldStatus & (~mask)
-        if (not enable): # we want to write 0 to activate the outputs so check opposite of "enable"
-            newStatus |= mask
-        if verbose:
-            print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
+        newnibble= (enable & 0xF) << 4*nibble # bits we want to change are marked with 1
+        newStatus= (oldStatus & (~mask)) | (newnibble & mask)
+
         self.IC6.setIOReg(bank, newStatus)
+
+        if (verbose > 0):
+            self.getDUTOutpus(dutN, verbose)
+        if (verbose > 1):
+            print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
+
         return newStatus
 
     def DUTClkSrc(self, dutN, clkSrc=0, verbose= False):
@@ -147,7 +181,7 @@ class TLU:
             newStatus= newStatus | maskHigh
             outStat= "FPGA"
         print "  Setting DUT:", dutN, "clock source to", outStat
-        if verbose:
+        if (verbose > 1):
             print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
         self.IC7.setIOReg(bank, newStatus)
         return newStatus
@@ -185,6 +219,31 @@ class TLU:
         res= self.TLU_I2C.read( myslave, nwords)
         print "\tPost RegDir: ", res
 
+    def getDUTOutpus(self, dutN, verbose=0):
+        if (dutN < 0) | (dutN> (self.nDUTs-1)):
+            print "\tERROR: DUTOutputs. The DUT number must be comprised between 0 and ", self.nDUTs-1
+            return -1
+        bank= dutN//2 # DUT0 and DUT1 are on bank 0. DUT2 and DUT3 on bank 1
+        nibble= dutN%2 # DUT0 and DUT2 are on nibble 0. DUT1 and DUT3 are on nibble 1
+        res= self.IC6.getIOReg(bank)
+        dut_status= res[0]
+        dut_lines= ["CONT", "SPARE", "TRIG", "BUSY"]
+        dut_status= 0x0F & (dut_status >> (4*nibble))
+
+        if verbose > 0:
+            for idx, iLine in enumerate(dut_lines):
+                this_bit= 0x1 & (dut_status  >> idx)
+                if this_bit:
+                    this_status= "ENABLED"
+                else:
+                    this_status= "DISABLED"
+                print "\t", iLine, "output is", this_status
+
+        if verbose > 1:
+            print "\tDUT CURRENT:", hex(dut_status), "Nibble:", nibble, "Bank:", bank
+
+        return dut_status
+
     def getAllChannelsCounts(self):
         chCounts=[]
         for ch in range (0,self.nChannels):
@@ -194,7 +253,7 @@ class TLU:
     def getChStatus(self):
         inputStatus= self.hw.getNode("triggerInputs.SerdesRstR").read()
         self.hw.dispatch()
-        print "\tInput status= " , hex(inputStatus)
+        print "\tTRIGGER COUNTERS status= " , hex(inputStatus)
         return inputStatus
 
     def getChCount(self, channel):
@@ -498,7 +557,7 @@ class TLU:
         self.hw.dispatch()
         self.getVetoShutters()
 
-    def writeThreshold(self, DACtarget, Vtarget, channel):
+    def writeThreshold(self, DACtarget, Vtarget, channel, verbose=False):
         #Writes the threshold. The DAC voltage differs from the threshold voltage because
         #the range is shifted to be symmetrical around 0V.
 
@@ -517,7 +576,7 @@ class TLU:
             print "\tCH:", channel
         print "\tTarget V:", Vtarget
         dacValue = 0xFFFF * (Vdac / Vref)
-        DACtarget.writeDAC(int(dacValue), channel, True)
+        DACtarget.writeDAC(int(dacValue), channel, verbose)
 
     def packBits(self, raw_values):
         packed_bits= 0
@@ -636,23 +695,32 @@ class TLU:
         cmd = int("0x1",16)
         self.setTriggerVetoStatus(cmd)
 
+        # #Get Verbose setting
+        self.verbose= parsed_cfg.getint(section_name, "verbose")
+
 
         # #SET DACs
-        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold0"), 1, )
-        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold1"), 0, )
-        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold2"), 3, )
-        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold3"), 2, )
-        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold4"), 1, )
-        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold5"), 0, )
+        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold0"), 1, self.verbose)
+        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold1"), 0, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold2"), 3, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold3"), 2, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold4"), 1, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold5"), 0, self.verbose)
 
         #
         # #ENABLE/DISABLE HDMI OUTPUTS
-        self.DUTOutputs(0, True, False)
-        self.DUTOutputs(1, True, False)
-        self.DUTOutputs(2, True, False)
-        self.DUTOutputs(3, True, False)
+        self.DUTOutputs(0, int(parsed_cfg.get(section_name, "HDMI1_set"), 16) , self.verbose)
+        self.DUTOutputs(1, int(parsed_cfg.get(section_name, "HDMI2_set"), 16) , self.verbose)
+        self.DUTOutputs(2, int(parsed_cfg.get(section_name, "HDMI3_set"), 16) , self.verbose)
+        self.DUTOutputs(3, int(parsed_cfg.get(section_name, "HDMI4_set"), 16) , self.verbose)
 
-        ## ENABLE/DISABLE LEMO CLOCK OUTPUT
+        # #SELECT CLOCK SOURCE TO HDMI
+        self.DUTClkSrc(0, int(parsed_cfg.get(section_name, "HDMI1_clk"), 16) , self.verbose)
+        self.DUTClkSrc(1, int(parsed_cfg.get(section_name, "HDMI2_clk"), 16) , self.verbose)
+        self.DUTClkSrc(2, int(parsed_cfg.get(section_name, "HDMI3_clk"), 16) , self.verbose)
+        self.DUTClkSrc(3, int(parsed_cfg.get(section_name, "HDMI4_clk"), 16) , self.verbose)
+
+        # #ENABLE/DISABLE LEMO CLOCK OUTPUT
         self.enableClkLEMO(parsed_cfg.getint(section_name, "LEMOclk"), False)
 
         #
@@ -739,8 +807,8 @@ class TLU:
         FIFOcmd= 0x2
         self.setFifoCSR(FIFOcmd)
         eventFifoFillLevel= self.getFifoLevel()
-        cmd = int("0x000",16)
-        self.setInternalTrg(cmd)
+        #cmd = int("0x000",16)
+        #self.setInternalTrg(cmd)
 
         if logtimestamps:
             self.setRecordDataStatus(True)
@@ -754,7 +822,7 @@ class TLU:
         cmd = int("0x0",16)
         self.setTriggerVetoStatus(cmd)
 
-        print "TLU RUNNING"
+        print "TLU STARTED"
 
 ##################################################################################################################################
 ##################################################################################################################################
