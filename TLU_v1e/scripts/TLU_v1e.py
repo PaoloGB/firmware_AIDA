@@ -3,6 +3,10 @@ import uhal;
 import pprint;
 import ConfigParser
 from FmcTluI2c import *
+import threading
+from ROOT import TFile, TTree, gROOT
+
+
 from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
@@ -11,6 +15,9 @@ from PCA9539PW import PCA9539PW # Library for serial line expander
 class TLU:
     """docstring for TLU"""
     def __init__(self, dev_name, man_file, parsed_cfg):
+
+        self.isRunning= False
+
         section_name= "Producer.fmctlu"
         self.dev_name = dev_name
 
@@ -291,10 +298,11 @@ class TLU:
     	#print "\tFIFO Data:", hex(fifoData)
     	return fifoData
 
-    def getFifoLevel(self):
+    def getFifoLevel(self, verbose= 0):
         FifoFill= self.hw.getNode("eventBuffer.EventFifoFillLevel").read()
         self.hw.dispatch()
-        print "\tFIFO level read back as:", hex(FifoFill)
+        if (verbose > 0):
+            print "\tFIFO level read back as:", hex(FifoFill)
         return FifoFill
 
     def getFifoCSR(self):
@@ -683,6 +691,21 @@ class TLU:
 
 ##################################################################################################################################
 ##################################################################################################################################
+    def acquire(self):
+        print "STARTING ACQUIRE LOOP"
+        print "Run#" , self.runN, "\n"
+        self.isRunning= True
+        index=0
+        while (self.isRunning == True):
+            eventFifoFillLevel= self.getFifoLevel(0)
+            nFifoWords= int(eventFifoFillLevel)
+            if (nFifoWords > 0):
+                fifoData= self.getFifoData(nFifoWords)
+                outList= self.parseFifoData(fifoData, nFifoWords/6, False)
+            time.sleep(0.5)
+            index= index + nFifoWords/6
+        print "STOPPING ACQUIRE LOOP:", index, "events collected"
+        return index
 
     def configure(self, parsed_cfg):
         print "\nTLU INITIALIZING..."
@@ -800,8 +823,9 @@ class TLU:
 
 ##################################################################################################################################
 ##################################################################################################################################
-    def start(self, logtimestamps=False):
+    def start(self, logtimestamps=False, runN=0, root_file= None):
         print "TLU STARTING..."
+        self.runN= runN
 
         print "  FIFO RESET:"
         FIFOcmd= 0x2
@@ -819,10 +843,13 @@ class TLU:
         self.pulseT0()
 
         print "  Turning off software trigger veto"
-        cmd = int("0x0",16)
-        self.setTriggerVetoStatus(cmd)
+        self.setTriggerVetoStatus( int("0x0",16) )
 
         print "TLU STARTED"
+
+        nEvents= self.acquire()
+        return
+
 
 ##################################################################################################################################
 ##################################################################################################################################
@@ -834,8 +861,7 @@ class TLU:
         self.getFifoFlags()
         self.getFifoCSR()
         print "  Turning on software trigger veto"
-        cmd = int("0x1",16)
-        self.setTriggerVetoStatus(cmd)
+        self.setTriggerVetoStatus( int("0x1",16) )
 
         nFifoWords= int(eventFifoFillLevel)
         fifoData= self.getFifoData(nFifoWords)
@@ -852,3 +878,4 @@ class TLU:
     	#    outFile.write("%s\n" % fifoData[iData])
         #    print hex(fifoData[iData])
         print "TLU STOPPED"
+        return

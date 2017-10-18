@@ -6,6 +6,8 @@ from FmcTluI2c import *
 import uhal
 import sys
 import time
+from datetime import datetime
+import threading
 # from ROOT import TFile, TTree
 # from ROOT import gROOT
 from datetime import datetime
@@ -16,6 +18,9 @@ import cmd
 
 # Use to have config file parser
 import ConfigParser
+
+# Use root
+from ROOT import TFile, TTree, gROOT
 
 
 ## Define class that creates the command user inteface
@@ -42,7 +47,7 @@ class MyPrompt(cmd.Cmd):
         """Processes the CONF file and writes its values to the TLU. To use a specific file type:\n
         parseIni path/to/filename.conf\n
         (without quotation marks)"""
-    	print "COMMAND RECEIVED: PARSE CONFIG"
+    	print "==== COMMAND RECEIVED: PARSE CONFIG"
     	#self.testme()
         parsed_cfg= self.open_cfg_file(args, "/users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/scripts/localConf.conf")
         try:
@@ -55,21 +60,68 @@ class MyPrompt(cmd.Cmd):
 
     def do_startRun(self, args):
         """Starts the TLU run"""
-    	print "COMMAND RECEIVED: STARTING TLU RUN"
+    	print "==== COMMAND RECEIVED: STARTING TLU RUN"
     	#startTLU( uhalDevice = self.hw, pychipsBoard = self.board,  writeTimestamps = ( options.writeTimestamps == "True" ) )
-        logdata= True
-        TLU.start(logdata)
-    	#print self.hw
+        arglist = args.split()
+        if len(arglist) == 0:
+            print "\tno run# specified, using 1"
+            runN= 1
+        else:
+            runN= arglist[0]
 
-    def do_stopRun(self, args):
+        logdata= True
+
+        #TLU.start(logdata)
+        if (TLU.isRunning): #Prevent double start
+            print "  Run already in progress"
+        else:
+            now = datetime.now().strftime('%Y%m%d_%H%M%S')
+            default_filename = "./datafiles/"+ now + "_tluData_" + str(runN) + ".root"
+            rootFname= default_filename
+            print "OPENING ROOT FILE:", rootFname
+            self.root_file = TFile( rootFname, 'RECREATE' )
+            # Create a root "tree"
+            tree = TTree( 'T', 'TLU Data' )
+            highWord =0
+            lowWord =0
+            evtNumber=0
+            timeStamp=0
+            evtType=0
+            trigsFired=0
+            bufPos = 0
+
+            # Create a branch for each piece of data
+            tree.Branch( 'tluHighWord'  , highWord  , "HighWord/l")
+            tree.Branch( 'tluLowWord'   , lowWord   , "LowWord/l")
+            tree.Branch( 'tluTimeStamp' , timeStamp , "TimeStamp/l")
+            tree.Branch( 'tluBufPos'    , bufPos    , "Bufpos/s")
+            tree.Branch( 'tluEvtNumber' , evtNumber , "EvtNumber/i")
+            tree.Branch( 'tluEvtType'   , evtType   , "EvtType/b")
+            tree.Branch( 'tluTrigFired' , trigsFired, "TrigsFired/b")
+            self.root_file.Write()
+
+            daq_thread= threading.Thread(target = TLU.start, args=(logdata, runN, self.root_file))
+            daq_thread.start()
+
+
+
+
+    def do_endRun(self, args):
     	"""Stops the TLU run"""
-    	print "COMMAND RECEIVED: STOP TLU RUN"
-        TLU.stop(False, False)
-    	#stopTLU( uhalDevice = hw, pychipsBoard = board )
+    	print "==== COMMAND RECEIVED: STOP TLU RUN"
+        if TLU.isRunning:
+            TLU.isRunning= False
+            TLU.stop(False, False)
+            self.root_file.Write()
+            self.root_file.Write()
+        else:
+            print "  No run to stop"
+
 
     def do_quit(self, args):
         """Quits the program."""
-        print "COMMAND RECEIVED: QUITTING SCRIPT."
+        print "==== COMMAND RECEIVED: QUITTING TLU CONSOLE"
+        self.root_file.Close()
         #raise SystemExit
 	return True
 
