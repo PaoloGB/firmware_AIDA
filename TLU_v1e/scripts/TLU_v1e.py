@@ -639,12 +639,17 @@ class TLU:
                 bufPos= 0
                 evtNumber= evNum
                 evtType= evType
-                trigsFired= 0
-                mystruct.highWord= word0
-                mystruct.lowhWord= word1
-                mystruct.extWord= word2
+                trigsFired= inTrig
+                mystruct.raw0= fifoData[index]
+                mystruct.raw1= fifoData[index+1]
+                mystruct.raw2= fifoData[index+2]
+                mystruct.raw3= fifoData[index+3]
+                mystruct.raw4= fifoData[index+4]
+                mystruct.raw5= fifoData[index+5]
                 mystruct.evtNumber= evNum
                 mystruct.tluTimeStamp= tStamp
+                mystruct.tluEvtType= evType
+                mystruct.tluTrigFired= inTrig
                 root_tree.Fill()
 
             outList.insert(len(outList), fineTsList)
@@ -877,10 +882,10 @@ class TLU:
         print "  Turning on software trigger veto"
         self.setTriggerVetoStatus( int("0x1",16) )
 
-        #nFifoWords= int(eventFifoFillLevel)
-        #fifoData= self.getFifoData(nFifoWords)
+        nFifoWords= int(eventFifoFillLevel)
+        fifoData= self.getFifoData(nFifoWords)
 
-        #outList= self.parseFifoData(fifoData, nFifoWords/6, True)
+        outList= self.parseFifoData(fifoData, nFifoWords/6, None, None, True)
         if saveD:
             self.saveFifoData(outList)
         if plotD:

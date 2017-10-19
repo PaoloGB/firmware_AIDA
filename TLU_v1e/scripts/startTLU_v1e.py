@@ -61,8 +61,14 @@ class MyPrompt(cmd.Cmd):
             return
 
     def do_id(self, args):
-        """Interrogate the TLU and print it unique ID on screen"""
+        """Interrogates the TLU and prints it unique ID on screen"""
         TLU.getSN()
+        return
+
+    def do_triggers(self, args):
+        """Interrogates the TLU and prints the number of triggers seen by the input discriminators"""
+        TLU.getChStatus()
+        TLU.getAllChannelsCounts()
         return
 
     def do_startRun(self, args):
@@ -98,21 +104,26 @@ class MyPrompt(cmd.Cmd):
             #trigsFired=0
             #bufPos = 0
 
+            #https://root-forum.cern.ch/t/long-integer/1961/2
             gROOT.ProcessLine(
             "struct MyStruct {\
-               Int_t     highWord;\
-               Int_t     lowWord;\
-               Int_t     extWord;\
-               Int_t     evtNumber;\
-               Int_t     tluTimeStamp;\
-               Int_t     tluEvtType;\
+               UInt_t     raw0;\
+               UInt_t     raw1;\
+               UInt_t     raw2;\
+               UInt_t     raw3;\
+               UInt_t     raw4;\
+               UInt_t     raw5;\
+               UInt_t     evtNumber;\
+               ULong64_t     tluTimeStamp;\
+               UChar_t     tluEvtType;\
+               UChar_t     tluTrigFired;\
             };" );
 
             mystruct= MyStruct()
 
 
             # Create a branch for each piece of data
-            root_tree.Branch('myints', mystruct, 'highWord/I:lowWord/I:extWord/I:evtNumber/I:tluTimeStamp/I:tluEvtType/I' )
+            root_tree.Branch('EVENTS', mystruct, 'raw0/i:raw1/i:raw2/i:raw3/i:raw4/i:raw5/i:evtNumber/i:tluTimeStamp/l:tluEvtType/b:tluTrigFired/b' )
             # root_tree.Branch( 'tluHighWord'  , highWord  , "HighWord/l")
             # root_tree.Branch( 'tluLowWord'   , lowWord   , "LowWord/l")
             # root_tree.Branch( 'tluExtWord'   , extWord   , "ExtWord/l")
