@@ -20,7 +20,9 @@ import cmd
 import ConfigParser
 
 # Use root
-from ROOT import TFile, TTree, gROOT
+from ROOT import TFile, TTree, gROOT, AddressOf
+from ROOT import *
+import numpy as numpy
 
 
 ## Define class that creates the command user inteface
@@ -58,6 +60,11 @@ class MyPrompt(cmd.Cmd):
             print "\t Could not retrieve CONF data."
             return
 
+    def do_id(self, args):
+        """Interrogate the TLU and print it unique ID on screen"""
+        TLU.getSN()
+        return
+
     def do_startRun(self, args):
         """Starts the TLU run"""
     	print "==== COMMAND RECEIVED: STARTING TLU RUN"
@@ -74,6 +81,7 @@ class MyPrompt(cmd.Cmd):
         #TLU.start(logdata)
         if (TLU.isRunning): #Prevent double start
             print "  Run already in progress"
+            return
         else:
             now = datetime.now().strftime('%Y%m%d_%H%M%S')
             default_filename = "./datafiles/"+ now + "_tluData_" + str(runN) + ".root"
@@ -81,30 +89,42 @@ class MyPrompt(cmd.Cmd):
             print "OPENING ROOT FILE:", rootFname
             self.root_file = TFile( rootFname, 'RECREATE' )
             # Create a root "tree"
-            tree = TTree( 'T', 'TLU Data' )
-            highWord =0
-            lowWord =0
-            evtNumber=0
-            timeStamp=0
-            evtType=0
-            trigsFired=0
-            bufPos = 0
+            root_tree = TTree( 'T', 'TLU Data' )
+            #highWord =0
+            #lowWord =0
+            #evtNumber=0
+            #timeStamp=0
+            #evtType=0
+            #trigsFired=0
+            #bufPos = 0
+
+            gROOT.ProcessLine(
+            "struct MyStruct {\
+               Int_t     highWord;\
+               Int_t     lowWord;\
+               Int_t     extWord;\
+               Int_t     evtNumber;\
+               Int_t     tluTimeStamp;\
+               Int_t     tluEvtType;\
+            };" );
+
+            mystruct= MyStruct()
+
 
             # Create a branch for each piece of data
-            tree.Branch( 'tluHighWord'  , highWord  , "HighWord/l")
-            tree.Branch( 'tluLowWord'   , lowWord   , "LowWord/l")
-            tree.Branch( 'tluTimeStamp' , timeStamp , "TimeStamp/l")
-            tree.Branch( 'tluBufPos'    , bufPos    , "Bufpos/s")
-            tree.Branch( 'tluEvtNumber' , evtNumber , "EvtNumber/i")
-            tree.Branch( 'tluEvtType'   , evtType   , "EvtType/b")
-            tree.Branch( 'tluTrigFired' , trigsFired, "TrigsFired/b")
-            self.root_file.Write()
+            root_tree.Branch('myints', mystruct, 'highWord/I:lowWord/I:extWord/I:evtNumber/I:tluTimeStamp/I:tluEvtType/I' )
+            # root_tree.Branch( 'tluHighWord'  , highWord  , "HighWord/l")
+            # root_tree.Branch( 'tluLowWord'   , lowWord   , "LowWord/l")
+            # root_tree.Branch( 'tluExtWord'   , extWord   , "ExtWord/l")
+            # root_tree.Branch( 'tluTimeStamp' , timeStamp , "TimeStamp/l")
+            # root_tree.Branch( 'tluBufPos'    , bufPos    , "Bufpos/s")
+            # root_tree.Branch( 'tluEvtNumber' , evtNumber , "EvtNumber/i")
+            # root_tree.Branch( 'tluEvtType'   , evtType   , "EvtType/b")
+            # root_tree.Branch( 'tluTrigFired' , trigsFired, "TrigsFired/b")
+            #self.root_file.Write()
 
-            daq_thread= threading.Thread(target = TLU.start, args=(logdata, runN, self.root_file))
+            daq_thread= threading.Thread(target = TLU.start, args=(logdata, runN, mystruct, root_tree))
             daq_thread.start()
-
-
-
 
     def do_endRun(self, args):
     	"""Stops the TLU run"""
@@ -113,7 +133,7 @@ class MyPrompt(cmd.Cmd):
             TLU.isRunning= False
             TLU.stop(False, False)
             self.root_file.Write()
-            self.root_file.Write()
+            self.root_file.Close()
         else:
             print "  No run to stop"
 
@@ -121,7 +141,6 @@ class MyPrompt(cmd.Cmd):
     def do_quit(self, args):
         """Quits the program."""
         print "==== COMMAND RECEIVED: QUITTING TLU CONSOLE"
-        self.root_file.Close()
         #raise SystemExit
 	return True
 

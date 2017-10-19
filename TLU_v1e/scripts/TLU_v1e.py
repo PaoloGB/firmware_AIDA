@@ -4,7 +4,8 @@ import pprint;
 import ConfigParser
 from FmcTluI2c import *
 import threading
-from ROOT import TFile, TTree, gROOT
+from ROOT import TFile, TTree, gROOT, AddressOf
+from ROOT import *
 
 
 from I2CuHal import I2CCore
@@ -597,9 +598,7 @@ class TLU:
         print "\tPacked =", hex(packed_bits)
         return packed_bits
 
-
-
-    def parseFifoData(self, fifoData, nEvents, verbose):
+    def parseFifoData(self, fifoData, nEvents, mystruct, root_tree, verbose):
         #for index in range(0, len(fifoData)-1, 6):
         outList= []
         for index in range(0, (nEvents)*6, 6):
@@ -632,7 +631,22 @@ class TLU:
                 print fineTsList
             fineTsList.insert(0, tStamp)
             fineTsList.insert(0, evNum)
-            #print fineTsList
+            if (root_tree != None):
+                highWord= word0
+                lowWord= word1
+                extWord= word2
+                timeStamp= tStamp
+                bufPos= 0
+                evtNumber= evNum
+                evtType= evType
+                trigsFired= 0
+                mystruct.highWord= word0
+                mystruct.lowhWord= word1
+                mystruct.extWord= word2
+                mystruct.evtNumber= evNum
+                mystruct.tluTimeStamp= tStamp
+                root_tree.Fill()
+
             outList.insert(len(outList), fineTsList)
         #print "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
         #print "EN#\tCOARSE_TS\tFINE_TS0...FINE_TS11"
@@ -682,7 +696,6 @@ class TLU:
         #Display plot
         plt.show()
 
-
     def saveFifoData(self, outList):
         import csv
         with open("output.csv", "wb") as f:
@@ -691,7 +704,7 @@ class TLU:
 
 ##################################################################################################################################
 ##################################################################################################################################
-    def acquire(self):
+    def acquire(self, mystruct, root_tree= None):
         print "STARTING ACQUIRE LOOP"
         print "Run#" , self.runN, "\n"
         self.isRunning= True
@@ -701,8 +714,9 @@ class TLU:
             nFifoWords= int(eventFifoFillLevel)
             if (nFifoWords > 0):
                 fifoData= self.getFifoData(nFifoWords)
-                outList= self.parseFifoData(fifoData, nFifoWords/6, False)
-            time.sleep(0.5)
+                outList= self.parseFifoData(fifoData, nFifoWords/6, mystruct, root_tree, False)
+
+            time.sleep(0.1)
             index= index + nFifoWords/6
         print "STOPPING ACQUIRE LOOP:", index, "events collected"
         return index
@@ -823,7 +837,7 @@ class TLU:
 
 ##################################################################################################################################
 ##################################################################################################################################
-    def start(self, logtimestamps=False, runN=0, root_file= None):
+    def start(self, logtimestamps=False, runN=0, mystruct= None, root_tree= None):
         print "TLU STARTING..."
         self.runN= runN
 
@@ -847,7 +861,7 @@ class TLU:
 
         print "TLU STARTED"
 
-        nEvents= self.acquire()
+        nEvents= self.acquire(mystruct, root_tree)
         return
 
 
@@ -863,12 +877,10 @@ class TLU:
         print "  Turning on software trigger veto"
         self.setTriggerVetoStatus( int("0x1",16) )
 
-        nFifoWords= int(eventFifoFillLevel)
-        fifoData= self.getFifoData(nFifoWords)
+        #nFifoWords= int(eventFifoFillLevel)
+        #fifoData= self.getFifoData(nFifoWords)
 
-        outList= self.parseFifoData(fifoData, nFifoWords/6, True)
-        #saveD= 0
-        #plotD= 0
+        #outList= self.parseFifoData(fifoData, nFifoWords/6, True)
         if saveD:
             self.saveFifoData(outList)
         if plotD:
