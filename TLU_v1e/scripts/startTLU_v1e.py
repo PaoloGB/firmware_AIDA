@@ -2,7 +2,7 @@
 # miniTLU test script
 
 #from PyChipsUser import *
-from FmcTluI2c import *
+#from FmcTluI2c import *
 import uhal
 import sys
 import time

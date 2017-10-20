@@ -2,11 +2,11 @@
 import uhal;
 import pprint;
 import ConfigParser
-from FmcTluI2c import *
+#from FmcTluI2c import *
 import threading
 from ROOT import TFile, TTree, gROOT, AddressOf
 from ROOT import *
-
+import time
 
 from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
