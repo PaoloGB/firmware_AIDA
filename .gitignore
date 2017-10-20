@@ -4,14 +4,19 @@
 /TLU_v1c/work/*
 /Enclustra_Example/*
 /Enclustra_tests/
+/TLU_v1e/scripts/datafiles
 /Data/*
 *.pyc
 .svn/*
+*.jou
+*.str
+*.BKP
 
 ## Backup files
 *.py~
 *.md~
 *.sh~
+*.*~
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

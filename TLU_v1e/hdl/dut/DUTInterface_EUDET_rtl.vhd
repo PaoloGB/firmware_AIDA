@@ -62,6 +62,7 @@ architecture rtl of DUTInterface_EUDET is
   signal shift_reg_ce  :  std_logic;
 
   signal dut_busy_r1 , dut_busy_r2 , dut_clk_r1 , dut_clk_r2 : std_logic;  -- ! registered values
+  signal trigger_counter_copy : std_logic_vector(g_TRIGGER_DATA_WIDTH-1 downto 0);  --! registered copy of event number
   
 begin  -- rtl
 
@@ -114,7 +115,7 @@ end process;
   -- type   : combinational
   -- inputs : system_clk_i , trigger_counter_i
   -- outputs: serial_trig_data
-  trig_data_driver: process (system_clk_i , trigger_counter_i , shift_reg_ce , trig_shift_reg , state)
+  trig_data_driver: process (system_clk_i , trigger_counter_copy , shift_reg_ce , trig_shift_reg , state)
   begin
     
     if rising_edge( system_clk_i ) then
@@ -131,7 +132,7 @@ end process;
       elsif (state = WAIT_FOR_BUSY_HIGH ) then        
 	-- only clock out bottom 15 bits of data. 
         -- (replace fixed width with a mask at some stage ?)
-	trig_shift_reg <=  "00000000000000000" & trigger_counter_i(14 downto 0);
+	trig_shift_reg <=  "00000000000000000" & trigger_counter_copy(14 downto 0);
         serial_trig_data <= '0';
       end if;
 
@@ -150,6 +151,7 @@ end process;
       when IDLE =>
         if ( trigger_i = '1') then  -- respond to trigger going high
           next_state <= WAIT_FOR_BUSY_HIGH;  -- wait for DUT to respond to busy
+          trigger_counter_copy <= trigger_counter_i; -- register the trigger number to shift it out
 
         elsif ( (dut_clk_r2 = '1') and (enable_dut_veto_i = '1') ) then      -- If DUT asserts DUT_CLK_I then veto triggers
           next_state <= DUT_INITIATED_VETO;          

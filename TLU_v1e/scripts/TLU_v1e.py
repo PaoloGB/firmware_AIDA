@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 import uhal;
 import pprint;
-from FmcTluI2c import *
+import ConfigParser
+#from FmcTluI2c import *
+import threading
+from ROOT import TFile, TTree, gROOT, AddressOf
+from ROOT import *
+import time
+
 from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
@@ -9,15 +15,35 @@ from PCA9539PW import PCA9539PW # Library for serial line expander
 
 class TLU:
     """docstring for TLU"""
-    def __init__(self, dev_name, man_file):
+    def __init__(self, dev_name, man_file, parsed_cfg):
+
+        self.isRunning= False
+
+        section_name= "Producer.fmctlu"
         self.dev_name = dev_name
+
+        #man_file= parsed_cfg.get(section_name, "ConnectionFile")
         self.manager= uhal.ConnectionManager(man_file)
         self.hw = self.manager.getDevice(self.dev_name)
-        self.nDUTs= 4 #Number of DUT connectors
-        self.nChannels= 6 #Number of trigger inputs
-        self.VrefInt= 2.5 #Internal DAC voltage reference
-        self.VrefExt= 1.3 #External DAC voltage reference
-        self.intRefOn= False #Internal reference is OFF by default
+
+        # #Get Verbose setting
+        self.verbose= parsed_cfg.getint(section_name, "verbose")
+
+        #self.nDUTs= 4 #Number of DUT connectors
+        self.nDUTs= parsed_cfg.getint(section_name, "nDUTs")
+
+        #self.nChannels= 6 #Number of trigger inputs
+        self.nChannels= parsed_cfg.getint(section_name, "nTrgIn")
+
+        #self.VrefInt= 2.5 #Internal DAC voltage reference
+        self.VrefInt= parsed_cfg.getfloat(section_name, "VRefInt")
+
+        #self.VrefExt= 1.3 #External DAC voltage reference
+        self.VrefExt= parsed_cfg.getfloat(section_name, "VRefExt")
+
+        #self.intRefOn= False #Internal reference is OFF by default
+        self.intRefOn= bool(parsed_cfg.get(section_name, "intRefOn"))
+
 
         self.fwVersion = self.hw.getNode("version").read()
         self.hw.dispatch()
@@ -30,19 +56,32 @@ class TLU:
         enableCore= True #Only need to run this once, after power-up
         self.enableCore()
 
-        # Instantiate clock chip
-        self.zeClock=si5345(self.TLU_I2C, 0x68)
+        # Instantiate clock chip and configure it (if necessary)
+        #self.zeClock=si5345(self.TLU_I2C, 0x68)
+        clk_addr= int(parsed_cfg.get(section_name, "I2C_CLK_Addr"), 16)
+        self.zeClock=si5345(self.TLU_I2C, clk_addr)
         res= self.zeClock.getDeviceVersion()
+        if (int(parsed_cfg.get(section_name, "CONFCLOCK"), 16)):
+            #clkRegList= self.zeClock.parse_clk("./../../bitFiles/TLU_CLK_Config_v1e.txt")
+            clkRegList= self.zeClock.parse_clk(parsed_cfg.get(section_name, "CLOCK_CFG_FILE"))
+            self.zeClock.writeConfiguration(clkRegList)######
+
         self.zeClock.checkDesignID()
 
         # Instantiate DACs and configure them to use reference based on TLU setting
-        self.zeDAC1=AD5665R(self.TLU_I2C, 0x13)
-        self.zeDAC2=AD5665R(self.TLU_I2C, 0x1F)
-        self.zeDAC1.setIntRef(self.intRefOn)
-        self.zeDAC2.setIntRef(self.intRefOn)
+        #self.zeDAC1=AD5665R(self.TLU_I2C, 0x13)
+        #self.zeDAC2=AD5665R(self.TLU_I2C, 0x1F)
+        dac_addr1= int(parsed_cfg.get(section_name, "I2C_DAC1_Addr"), 16)
+        self.zeDAC1=AD5665R(self.TLU_I2C, dac_addr1)
+        dac_addr2= int(parsed_cfg.get(section_name, "I2C_DAC2_Addr"), 16)
+        self.zeDAC2=AD5665R(self.TLU_I2C, dac_addr2)
+        self.zeDAC1.setIntRef(self.intRefOn, self.verbose)
+        self.zeDAC2.setIntRef(self.intRefOn, self.verbose)
 
         # Instantiate the serial line expanders and configure them to default values
-        self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
+        #self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
+        exp1_addr= int(parsed_cfg.get(section_name, "I2C_EXP1_Addr"), 16)
+        self.IC6=PCA9539PW(self.TLU_I2C, exp1_addr)
         self.IC6.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(0, 0x00)# 0= output, 1= input
         self.IC6.setOutputs(0, 0x77)# If output, set to XX
@@ -51,7 +90,9 @@ class TLU:
         self.IC6.setIOReg(1, 0x00)# 0= output, 1= input
         self.IC6.setOutputs(1, 0x77)# If output, set to XX
 
-        self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
+        #self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
+        exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2_Addr"), 16)
+        self.IC7=PCA9539PW(self.TLU_I2C, exp2_addr)
         self.IC7.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC7.setIOReg(0, 0x00)# 0= output, 1= input
         self.IC7.setOutputs(0, 0x00)# If output, set to XX
@@ -63,7 +104,34 @@ class TLU:
 
 ##################################################################################################################################
 ##################################################################################################################################
-    def DUTOutputs(self, dutN, enable=False, verbose=False):
+    def DUTOutputs_old(self, dutN, enable=False, verbose=False):
+        ## Set the status of the transceivers for a specific HDMI connector. When enable= False the transceivers are disabled and the
+        ## connector cannot send signals from FPGA to the outside world. When enable= True then signals from the FPGA will be sent out to the HDMI.
+        ## NOTE: the other direction is always enabled, i.e. signals from the DUTs are always sent to the FPGA.
+        ## NOTE: CLK direction must be defined separately using DUTClkSrc
+        ## NOTE: This version changes all the pins together. Use DUTOutputs to control individual pins.
+
+        if (dutN < 0) | (dutN> (self.nDUTs-1)):
+            print "\tERROR: DUTOutputs. The DUT number must be comprised between 0 and ", self.nDUTs-1
+            return -1
+        bank= dutN//2 # DUT0 and DUT1 are on bank 0. DUT2 and DUT3 on bank 1
+        nibble= dutN%2 # DUT0 and DUT2 are on nibble 0. DUT1 and DUT3 are on nibble 1
+        print "  Setting DUT:", dutN, "to", enable
+        if (verbose > 1):
+            print "\tBank", bank, "Nibble", nibble
+        res= self.IC6.getIOReg(bank)
+        oldStatus= res[0]
+        mask= 0xF << 4*nibble
+        newStatus= oldStatus & (~mask)
+        if (not enable): # we want to write 0 to activate the outputs so check opposite of "enable"
+            newStatus |= mask
+        self.IC6.setIOReg(bank, newStatus)
+
+        if verbose:
+            print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
+        return newStatus
+
+    def DUTOutputs(self, dutN, enable=0x7, verbose=False):
         ## Set the status of the transceivers for a specific HDMI connector. When enable= False the transceivers are disabled and the
         ## connector cannot send signals from FPGA to the outside world. When enable= True then signals from the FPGA will be sent out to the HDMI.
         ## NOTE: the other direction is always enabled, i.e. signals from the DUTs are always sent to the FPGA.
@@ -74,18 +142,22 @@ class TLU:
             return -1
         bank= dutN//2 # DUT0 and DUT1 are on bank 0. DUT2 and DUT3 on bank 1
         nibble= dutN%2 # DUT0 and DUT2 are on nibble 0. DUT1 and DUT3 are on nibble 1
-        print "  Setting DUT:", dutN, "to", enable
-        if verbose:
+        print "  Setting DUT:", dutN, "pins status to", hex(enable)
+        if (verbose > 1):
             print "\tBank", bank, "Nibble", nibble
         res= self.IC6.getIOReg(bank)
         oldStatus= res[0]
         mask= 0xF << 4*nibble
-        newStatus= oldStatus & (~mask)
-        if (not enable): # we want to write 0 to activate the outputs so check opposite of "enable"
-            newStatus |= mask
-        if verbose:
-            print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
+        newnibble= (enable & 0xF) << 4*nibble # bits we want to change are marked with 1
+        newStatus= (oldStatus & (~mask)) | (newnibble & mask)
+
         self.IC6.setIOReg(bank, newStatus)
+
+        if (verbose > 0):
+            self.getDUTOutpus(dutN, verbose)
+        if (verbose > 1):
+            print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
+
         return newStatus
 
     def DUTClkSrc(self, dutN, clkSrc=0, verbose= False):
@@ -117,7 +189,7 @@ class TLU:
             newStatus= newStatus | maskHigh
             outStat= "FPGA"
         print "  Setting DUT:", dutN, "clock source to", outStat
-        if verbose:
+        if (verbose > 1):
             print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
         self.IC7.setIOReg(bank, newStatus)
         return newStatus
@@ -155,6 +227,31 @@ class TLU:
         res= self.TLU_I2C.read( myslave, nwords)
         print "\tPost RegDir: ", res
 
+    def getDUTOutpus(self, dutN, verbose=0):
+        if (dutN < 0) | (dutN> (self.nDUTs-1)):
+            print "\tERROR: DUTOutputs. The DUT number must be comprised between 0 and ", self.nDUTs-1
+            return -1
+        bank= dutN//2 # DUT0 and DUT1 are on bank 0. DUT2 and DUT3 on bank 1
+        nibble= dutN%2 # DUT0 and DUT2 are on nibble 0. DUT1 and DUT3 are on nibble 1
+        res= self.IC6.getIOReg(bank)
+        dut_status= res[0]
+        dut_lines= ["CONT", "SPARE", "TRIG", "BUSY"]
+        dut_status= 0x0F & (dut_status >> (4*nibble))
+
+        if verbose > 0:
+            for idx, iLine in enumerate(dut_lines):
+                this_bit= 0x1 & (dut_status  >> idx)
+                if this_bit:
+                    this_status= "ENABLED"
+                else:
+                    this_status= "DISABLED"
+                print "\t", iLine, "output is", this_status
+
+        if verbose > 1:
+            print "\tDUT CURRENT:", hex(dut_status), "Nibble:", nibble, "Bank:", bank
+
+        return dut_status
+
     def getAllChannelsCounts(self):
         chCounts=[]
         for ch in range (0,self.nChannels):
@@ -164,7 +261,7 @@ class TLU:
     def getChStatus(self):
         inputStatus= self.hw.getNode("triggerInputs.SerdesRstR").read()
         self.hw.dispatch()
-        print "\tInput status= " , hex(inputStatus)
+        print "\tTRIGGER COUNTERS status= " , hex(inputStatus)
         return inputStatus
 
     def getChCount(self, channel):
@@ -202,10 +299,11 @@ class TLU:
     	#print "\tFIFO Data:", hex(fifoData)
     	return fifoData
 
-    def getFifoLevel(self):
+    def getFifoLevel(self, verbose= 0):
         FifoFill= self.hw.getNode("eventBuffer.EventFifoFillLevel").read()
         self.hw.dispatch()
-        print "\tFIFO level read back as:", hex(FifoFill)
+        if (verbose > 0):
+            print "\tFIFO level read back as:", hex(FifoFill)
         return FifoFill
 
     def getFifoCSR(self):
@@ -224,7 +322,7 @@ class TLU:
     def getInternalTrg(self):
         trigIntervalR = self.hw.getNode("triggerLogic.InternalTriggerIntervalR").read()
         self.hw.dispatch()
-        print "\tTrigger frequency read back as:", trigIntervalR, "Hz"
+        print "\tInternal interval read back as:", trigIntervalR
         return trigIntervalR
 
     def getMode(self):
@@ -398,8 +496,9 @@ class TLU:
             internalTriggerFreq = 0
             print "\tdisabled"
         else:
-            internalTriggerFreq = 160000.0/triggerInterval
-            print "\t  Setting:", internalTriggerFreq, "Hz"
+            internalTriggerFreq = 160000000.0/triggerInterval
+            print "\tRequired internal trigger frequency:", triggerInterval, "Hz"
+            print "\tSetting internal interval to:", internalTriggerFreq
         self.hw.getNode("triggerLogic.InternalTriggerIntervalW").write(int(internalTriggerFreq))
         self.hw.dispatch()
         self.getInternalTrg()
@@ -416,14 +515,16 @@ class TLU:
         self.hw.dispatch()
         self.getModeModifier()
 
-    def setPulseDelay(self, pulseDelay):
-        print "  TRIGGER DELAY SET TO", hex(pulseDelay), "[Units= 160MHz clock, 5-bit values (one per input) packed in to 32-bit word]"
+    def setPulseDelay(self, inArray):
+        print "  TRIGGER DELAY SET TO", inArray, "[Units= 160MHz clock, 5-bit values (one per input) packed in to 32-bit word]"
+        pulseDelay= self.packBits(inArray)
         self.hw.getNode("triggerLogic.PulseDelayW").write(pulseDelay)
         self.hw.dispatch()
         self.getPulseDelay()
 
-    def setPulseStretch(self, pulseStretch):
-        print "  INPUT COINCIDENCE WINDOW SET TO", hex(pulseStretch) ,"[Units= 160MHz clock cycles, 5-bit values (one per input) packed in to 32-bit word]"
+    def setPulseStretch(self, inArray):
+        print "  INPUT COINCIDENCE WINDOW SET TO", inArray ,"[Units= 160MHz clock cycles, 5-bit values (one per input) packed in to 32-bit word]"
+        pulseStretch= self.packBits(inArray)
         self.hw.getNode("triggerLogic.PulseStretchW").write(pulseStretch)
         self.hw.dispatch()
         self.getPulseStretch()
@@ -465,7 +566,7 @@ class TLU:
         self.hw.dispatch()
         self.getVetoShutters()
 
-    def writeThreshold(self, DACtarget, Vtarget, channel):
+    def writeThreshold(self, DACtarget, Vtarget, channel, verbose=False):
         #Writes the threshold. The DAC voltage differs from the threshold voltage because
         #the range is shifted to be symmetrical around 0V.
 
@@ -484,9 +585,20 @@ class TLU:
             print "\tCH:", channel
         print "\tTarget V:", Vtarget
         dacValue = 0xFFFF * (Vdac / Vref)
-        DACtarget.writeDAC(int(dacValue), channel, True)
+        DACtarget.writeDAC(int(dacValue), channel, verbose)
 
-    def parseFifoData(self, fifoData, nEvents, verbose):
+    def packBits(self, raw_values):
+        packed_bits= 0
+        if (len(raw_values) != self.nChannels):
+            print "Error (packBits): wrong number of elements in array"
+        else:
+            for idx, iCh in enumerate(raw_values):
+                tmpint= iCh << idx*5
+                packed_bits= packed_bits | tmpint
+        print "\tPacked =", hex(packed_bits)
+        return packed_bits
+
+    def parseFifoData(self, fifoData, nEvents, mystruct, root_tree, verbose):
         #for index in range(0, len(fifoData)-1, 6):
         outList= []
         for index in range(0, (nEvents)*6, 6):
@@ -519,7 +631,27 @@ class TLU:
                 print fineTsList
             fineTsList.insert(0, tStamp)
             fineTsList.insert(0, evNum)
-            #print fineTsList
+            if (root_tree != None):
+                highWord= word0
+                lowWord= word1
+                extWord= word2
+                timeStamp= tStamp
+                bufPos= 0
+                evtNumber= evNum
+                evtType= evType
+                trigsFired= inTrig
+                mystruct.raw0= fifoData[index]
+                mystruct.raw1= fifoData[index+1]
+                mystruct.raw2= fifoData[index+2]
+                mystruct.raw3= fifoData[index+3]
+                mystruct.raw4= fifoData[index+4]
+                mystruct.raw5= fifoData[index+5]
+                mystruct.evtNumber= evNum
+                mystruct.tluTimeStamp= tStamp
+                mystruct.tluEvtType= evType
+                mystruct.tluTrigFired= inTrig
+                root_tree.Fill()
+
             outList.insert(len(outList), fineTsList)
         #print "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
         #print "EN#\tCOARSE_TS\tFINE_TS0...FINE_TS11"
@@ -569,21 +701,34 @@ class TLU:
         #Display plot
         plt.show()
 
-
     def saveFifoData(self, outList):
         import csv
         with open("output.csv", "wb") as f:
             writer = csv.writer(f)
             writer.writerows(outList)
 
-
 ##################################################################################################################################
 ##################################################################################################################################
+    def acquire(self, mystruct, root_tree= None):
+        print "STARTING ACQUIRE LOOP"
+        print "Run#" , self.runN, "\n"
+        self.isRunning= True
+        index=0
+        while (self.isRunning == True):
+            eventFifoFillLevel= self.getFifoLevel(0)
+            nFifoWords= int(eventFifoFillLevel)
+            if (nFifoWords > 0):
+                fifoData= self.getFifoData(nFifoWords)
+                outList= self.parseFifoData(fifoData, nFifoWords/6, mystruct, root_tree, False)
 
-    def initialize(self):
+            time.sleep(0.1)
+            index= index + nFifoWords/6
+        print "STOPPING ACQUIRE LOOP:", index, "events collected"
+        return index
+
+    def configure(self, parsed_cfg):
         print "\nTLU INITIALIZING..."
-
-        # We need to pass it listenForTelescopeShutter , pulseDelay , pulseStretch , triggerPattern , DUTMask , ignoreDUTBusy , triggerInterval , thresholdVoltage
+        section_name= "Producer.fmctlu"
 
         #READ CONTENT OF EPROM VIA I2C
         self.getSN()
@@ -592,22 +737,33 @@ class TLU:
         cmd = int("0x1",16)
         self.setTriggerVetoStatus(cmd)
 
-        #
+        # #Get Verbose setting
+        self.verbose= parsed_cfg.getint(section_name, "verbose")
+
+
         # #SET DACs
-        targetV= -0.12
-        DACchannel= 7
-        self.writeThreshold(self.zeDAC1, targetV, DACchannel, )
-        self.writeThreshold(self.zeDAC2, targetV, DACchannel, )
+        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold0"), 1, self.verbose)
+        self.writeThreshold(self.zeDAC1, parsed_cfg.getfloat(section_name, "DACThreshold1"), 0, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold2"), 3, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold3"), 2, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold4"), 1, self.verbose)
+        self.writeThreshold(self.zeDAC2, parsed_cfg.getfloat(section_name, "DACThreshold5"), 0, self.verbose)
 
         #
         # #ENABLE/DISABLE HDMI OUTPUTS
-        self.DUTOutputs(0, True, False)
-        self.DUTOutputs(1, True, False)
-        self.DUTOutputs(2, True, False)
-        self.DUTOutputs(3, True, False)
+        self.DUTOutputs(0, int(parsed_cfg.get(section_name, "HDMI1_set"), 16) , self.verbose)
+        self.DUTOutputs(1, int(parsed_cfg.get(section_name, "HDMI2_set"), 16) , self.verbose)
+        self.DUTOutputs(2, int(parsed_cfg.get(section_name, "HDMI3_set"), 16) , self.verbose)
+        self.DUTOutputs(3, int(parsed_cfg.get(section_name, "HDMI4_set"), 16) , self.verbose)
 
-        ## ENABLE/DISABLE LEMO CLOCK OUTPUT
-        self.enableClkLEMO(True, False)
+        # #SELECT CLOCK SOURCE TO HDMI
+        self.DUTClkSrc(0, int(parsed_cfg.get(section_name, "HDMI1_clk"), 16) , self.verbose)
+        self.DUTClkSrc(1, int(parsed_cfg.get(section_name, "HDMI2_clk"), 16) , self.verbose)
+        self.DUTClkSrc(2, int(parsed_cfg.get(section_name, "HDMI3_clk"), 16) , self.verbose)
+        self.DUTClkSrc(3, int(parsed_cfg.get(section_name, "HDMI4_clk"), 16) , self.verbose)
+
+        # #ENABLE/DISABLE LEMO CLOCK OUTPUT
+        self.enableClkLEMO(parsed_cfg.getint(section_name, "LEMOclk"), False)
 
         #
         # #Check clock status
@@ -627,64 +783,75 @@ class TLU:
         # # Get inputs status and counters
         self.getChStatus()
         self.getAllChannelsCounts()
-        #
+
         # # Stop internal triggers until setup complete
         cmd = int("0x0",16)
         self.setInternalTrg(cmd)
-        #
-        # # Set pulse stretch
-        pulseStretch= 0x00000000
-        self.setPulseStretch(pulseStretch)
-        #
-        # # Set pulse delay
-        pulseDelay= 0x00
-        self.setPulseDelay(pulseDelay)
+
+        # # Set pulse stretches
+        str0= parsed_cfg.getint(section_name, "in0_STR")
+        str1= parsed_cfg.getint(section_name, "in1_STR")
+        str2= parsed_cfg.getint(section_name, "in2_STR")
+        str3= parsed_cfg.getint(section_name, "in3_STR")
+        str4= parsed_cfg.getint(section_name, "in4_STR")
+        str5= parsed_cfg.getint(section_name, "in5_STR")
+        self.setPulseStretch([str0, str1, str2, str3, str4, str5])
+
+        # # Set pulse delays
+        del0= parsed_cfg.getint(section_name, "in0_DEL")
+        del1= parsed_cfg.getint(section_name, "in1_DEL")
+        del2= parsed_cfg.getint(section_name, "in2_DEL")
+        del3= parsed_cfg.getint(section_name, "in3_DEL")
+        del4= parsed_cfg.getint(section_name, "in4_DEL")
+        del5= parsed_cfg.getint(section_name, "in5_DEL")
+        self.setPulseDelay([del0, del1, del2, del3, del4, del5])
 
         # # Set trigger pattern
-        #triggerPattern_low= 0xFFFEFFFE
-        #triggerPattern_high= 0xFFFFFFFF
-        triggerPattern_low= 0x00000002 #0x00000002
-        triggerPattern_high= 0x00000000
+        triggerPattern_low= int(parsed_cfg.get(section_name, "trigMaskLo"), 16)
+        triggerPattern_high= int(parsed_cfg.get(section_name, "trigMaskHi"), 16)
         self.setTrgPattern(triggerPattern_high, triggerPattern_low)
 
-        # # Set DUTs
-        DUTMask= 0xF
+        # # Set active DUTs
+        DUTMask= int(parsed_cfg.get(section_name, "DutMask"), 16)
         self.setDUTmask(DUTMask)
-        #
-        # # # Set mode
-        DUTMode= 0xFFFFFFFC ####
+
+        # # Set mode (AIDA, EUDET)
+        DUTMode= int(parsed_cfg.get(section_name, "DUTMaskMode"), 16)
         self.setMode(DUTMode)
 
-        # # # Set modifier
-        modifier = int("0xFF",16)
+        # # Set modifier
+        modifier = int(parsed_cfg.get(section_name, "DUTMaskModeModifier"), 16)
         self.setModeModifier(modifier)
-        #
+
         # # Set veto shutter
-        setVetoShutters=0
+        setVetoShutters = int(parsed_cfg.get(section_name, "DUTIgnoreShutterVeto"), 16)
         self.setVetoShutters(setVetoShutters)
 
         # # Set veto by DUT
-        ignoreDUTBusy=0x0
+        ignoreDUTBusy = int(parsed_cfg.get(section_name, "DUTIgnoreBusy"), 16)
         self.setVetoDUT(ignoreDUTBusy)
+
+        print "  Check external veto:"
         self.getExternalVeto()
-        #
+
         # # Set trigger interval (use 0 to disable internal triggers)
-        triggerInterval= 0000
+        triggerInterval= parsed_cfg.getint(section_name, "InternalTriggerFreq")
         self.setInternalTrg(triggerInterval)
 
         print "TLU INITIALIZED"
 
 ##################################################################################################################################
 ##################################################################################################################################
-    def start(self, logtimestamps=False):
+    def start(self, logtimestamps=False, runN=0, mystruct= None, root_tree= None):
         print "TLU STARTING..."
+        self.runN= runN
 
         print "  FIFO RESET:"
         FIFOcmd= 0x2
         self.setFifoCSR(FIFOcmd)
         eventFifoFillLevel= self.getFifoLevel()
-        cmd = int("0x000",16)
-        self.setInternalTrg(cmd)
+        #cmd = int("0x000",16)
+        #self.setInternalTrg(cmd)
 
         if logtimestamps:
             self.setRecordDataStatus(True)
@@ -695,10 +862,13 @@ class TLU:
         self.pulseT0()
 
         print "  Turning off software trigger veto"
-        cmd = int("0x0",16)
-        self.setTriggerVetoStatus(cmd)
+        self.setTriggerVetoStatus( int("0x0",16) )
 
-        print "TLU RUNNING"
+        print "TLU STARTED"
+
+        nEvents= self.acquire(mystruct, root_tree)
+        return
+
 
 ##################################################################################################################################
 ##################################################################################################################################
@@ -710,15 +880,12 @@ class TLU:
         self.getFifoFlags()
         self.getFifoCSR()
         print "  Turning on software trigger veto"
-        cmd = int("0x1",16)
-        self.setTriggerVetoStatus(cmd)
+        self.setTriggerVetoStatus( int("0x1",16) )
 
         nFifoWords= int(eventFifoFillLevel)
         fifoData= self.getFifoData(nFifoWords)
 
-        outList= self.parseFifoData(fifoData, nFifoWords/6, True)
-        #saveD= 0
-        #plotD= 0
+        outList= self.parseFifoData(fifoData, nFifoWords/6, None, None, True)
         if saveD:
             self.saveFifoData(outList)
         if plotD:
@@ -728,3 +895,4 @@ class TLU:
     	#    outFile.write("%s\n" % fifoData[iData])
         #    print hex(fifoData[iData])
         print "TLU STOPPED"
+        return
