@@ -16,7 +16,7 @@ Not all parameters are needed; if one of the parameters is not present in the fi
   \item[TLUmod] \verb|[string, "1e"]| Version of the \gls{tlu} hardware. Reserved for future use.
   \item[nDUTs] \verb|[positive int, 4]| Number of \gls{dut} in the current \gls{tlu}. This is for future upgrades and should not require editing by the user.
   \item[nTrgIn] \verb|[positive int, 6]| Number of trigger inputs in the current \gls{tlu}. This is for future upgrades and should not require editing by the user.
-  \item[I2C\_COREEXP\_Addr] \verb|[positive int, 0x21]| \gls{i2c} address of the core expander mounted on the Enclustra board. This is not required if a different \gls{fpga} is used.
+  \item[I2C\_COREEXP\_Addr] \verb|[positive int, 0x21]| \gls{i2c} address of the core expander mounted on the Enclustra board. This is not required if a different \gls{fpga} is used. See section~\ref{ch:i2c} for further details.
   \item[I2C\_CLK\_Addr] \verb|[positive int, 0x68]| \gls{i2c} address of Si5345 clock generator installed on the \gls{tlu}.
   \item[I2C\_DAC1\_Addr] \verb|[positive int, 0x13]| \gls{i2c} address of \gls{dac} installed on the \gls{tlu}. The \gls{dac} is used to configure the threshold of the trigger inputs.
   \item[I2C\_DAC2\_Addr] \verb|[positive int, 0x1F]| \gls{i2c} address of \gls{dac} installed on the \gls{tlu}. The \gls{dac} is used to configure the threshold of the trigger inputs.
