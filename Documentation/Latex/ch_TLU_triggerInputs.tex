@@ -1,26 +1,7 @@
-\section{Trigger inputs}\label{ch:triggerinputs}
-The status register (SerdesRst) is as follows:
-\begin{itemize}
-  \item bit 0: reset the ISERDES
-  \item bit 1: reset the trigger counters
-  \item bit 2: calibrate IDELAY: This seems to be disconnected at the moment.
-  \item bit 3: fixed to 0
-  \item bit 4, 5: status of \verb|thresholdDeserializer(Input0)|. When the IDELAY modules (prompt, delayed) have reached the correct delay, these two bits should read 00.
-  \item bit 6, 7: status of \verb|thresholdDeserializer(Input1)|
-  \item bit 8, 9: status of \verb|thresholdDeserializer(Input2)|
-  \item bit 10, 11: status of \verb|thresholdDeserializer(Input3)|
-  \item bit 12, 13: status of \verb|thresholdDeserializer(Input4)|
-  \item bit 14, 15: status of \verb|thresholdDeserializer(Input5)|
-  \item bit 16, 19: fixed to 0
-  \item bit 20: \verb|s_deserialized_threshold_data(Input0)(7)|
-  \item bit 21: \verb|s_deserialized_threshold_data(Input1)(7)|
-  \item bit 22: \verb|s_deserialized_threshold_data(Input2)(7)|
-  \item bit 23: \verb|s_deserialized_threshold_data(Input3)(7)|
-  \item bit 24: \verb|s_deserialized_threshold_data(Input4)(7)|
-  \item bit 25: \verb|s_deserialized_threshold_data(Input5)(7)|
-  \end{itemize}
-
-9 bits are used to determine trigger edges. 8 are from the deserializers, 1 is added as the LSB and is the MSB from the previous word.
+\chapter{Trigger inputs}\label{ch:triggerinputs}
+The six inputs on the \gls{tlu} can be used to generate a global trigger that is then issued to all the \gls{dut}s.\\
+Each input has a programmable voltage discriminator that can be configured in the range [-1.3 : 1.3]~V.\\
+All the inputs are protected by clamping diodes that limit the input voltage in the range [-5 : +5]~V.
 
 \section{Trigger logic}\label{ch:triggerLogic}
 The TLU has six trigger inputs than can be used to generate a valid trigger event. The number of possible different trigger combinations is $2^6= 64$ so a 64-bit word can be used to decide the valid combinations. In the hardware the 64-bit word is split into two 32-bit words (indicated as \gls{msb} and \gls{lsb} word) and the rules to generate the trigger can be specified by the user by writing in the two 32-bit registers \verb|TriggerPattern_highW| and \verb|TriggerPattern_lowW|: the first stores the 32 most significative bits of the trigger word, the latter stores the least significative bits.\\
@@ -127,7 +108,7 @@ DEC & I5 & I4 & I3 & I2 & I1 & I0 & PATTERN & \multicolumn{1}{l|}{\begin{tabular
 \end{alertinfo}
 
 \subsubsection{Example}
-In this example we have connected a pulser to two inputs of the \gls{tlu}, namely input 0 and input 4. The inputs fire with a small, random delay with respect to each other.\\
+In this example we have connected a pulser to two inputs of the \gls{tlu}, namely \verb|IN_1| and \verb|IN_5|. The inputs fire with a small, random delay with respect to each other.\\
 In order to ensure that the signals overlap adequately, we use the \emph{stretch} register (see chapter~\ref{ch:triggerLogic}) to increase the length of the pulses: we extend \emph{in0} to 10 clock cycles and \emph{in4} to 8 clock cycles, where the clock has a frequency of 160~MHz. The resulting signals are shown in figure~\ref{Fig:exampleExtendedTriggers}.
 \begin{figure}
   \centering
@@ -137,26 +118,39 @@ In order to ensure that the signals overlap adequately, we use the \emph{stretch
 \end{figure}\\
 We can now define the trigger logic to be used to assert a valid trigger: we only consider the lower 32-bits of the trigger word and see how different values can produce very different results.
 \begin{itemize}
-    \item Trigger \gls{lsb} word= 0x00020000. This indicates that the only valid trigger combination occurs when both \emph{in0} and \emph{in4} are high. The valid trigger goes high 1 clock cycle after this condition is met and remains high up to 1 clock cycle after the condition is no longer valid. This is illustrated in figure~\ref{Fig:exampleTrig00020000}.
+    \item Trigger \gls{lsb} word= 0x00020000. This indicates that the only valid trigger combination occurs when both \verb|IN_1| and \verb|IN_5| are high. The valid trigger goes high 1 clock cycle after this condition is met and remains high up to 1 clock cycle after the condition is no longer valid. This is illustrated in figure~\ref{Fig:exampleTrig00020000}.
         \begin{figure}
             \centering
             \includegraphics[width=.90\textwidth]{./Images/Trigger0x00020000.png}
             \caption{Trigger configuration 0x00020000. The valid trigger (blue) is asserted only when both signals are high. This condition occurs at frame 39. The trigger is asserted on the following frame.}
             \label{Fig:exampleTrig00020000}
         \end{figure}\\
-    \item Trigger \gls{lsb} word= 0x00020002. This indicates that a valid trigger is achieved in two separated configurations (in logic OR): when both inputs are high at the same time (as in the previous case) or if \emph{in0} is active on its own. This is illustrated in figure~\ref{Fig:exampleTrig00020002}. It can be seen that the valid trigger is asserted immediately one clock cycle after \emph{in0} is high and remains high as long as this condition is met. One might assume that specifying the combination with input 4 is redundant, but the following example should show that this is not the case.
+    \item Trigger \gls{lsb} word= 0x00020002. This indicates that a valid trigger is achieved in two separated configurations (in logic OR): when both inputs are high at the same time (as in the previous case) or if \verb|IN_1| is active on its own. This is illustrated in figure~\ref{Fig:exampleTrig00020002}. It can be seen that the valid trigger is asserted immediately one clock cycle after \verb|IN_1| is high and remains high as long as this condition is met. One might assume that specifying the combination with \verb|IN_5| is redundant, but the following example should show that this is not the case.
         \begin{figure}
             \centering
             \includegraphics[width=.90\textwidth]{./Images/Trigger0x00020002.png}
-            \caption{Trigger configuration 0x00020002. The valid trigger (blue) is asserted if \emph{in0} is high OR when \emph{in0} and \emph{in4} are both high at the same time.}
+            \caption{Trigger configuration 0x00020002. The valid trigger (blue) is asserted if \texttt{IN\_1} is high OR when \texttt{IN\_1} and \texttt{IN\_5} are both high at the same time.}
             \label{Fig:exampleTrig00020002}
         \end{figure}\\
-    \item Trigger \gls{lsb} word= 0x00000002. This indicates that the only valid configuration is the one where only \emph{in0} is high. It is important to understand that in this configuration all other inputs act as veto. This might produce unexpected results if the user is not careful\footnote{Specifically, pulse stretch, pulse delay and trigger logic must be configured correctly to avoid unwanted results.}.\\
-        In figure~\ref{Fig:exampleTrig00000002} it is possible to see that the logic produces two separated trigger valid pulses, both shorter than the ones in previous examples: the first one is due to \emph{in0} going high while \emph{in4} is low. As soon as \emph{in4} goes high, the trigger condition is no longer met. When \emph{in4} returns low, a trigger condition is met again because \emph{in0} is still high. In this specific case, the double pulse is caused by the different width of the pulses.
+    \item Trigger \gls{lsb} word= 0x00000002. This indicates that the only valid configuration is the one where only \verb|IN_1| is high. It is important to understand that in this configuration all other inputs act as veto. This might produce unexpected results if the user is not careful\footnote{Specifically, pulse stretch, pulse delay and trigger logic must be configured correctly to avoid unwanted results.}.\\
+        In figure~\ref{Fig:exampleTrig00000002} it is possible to see that the logic produces two separated trigger valid pulses, both shorter than the ones in previous examples: the first one is due to \verb|IN_1| going high while \verb|IN_5| is low. As soon as \verb|IN_5| goes high, the trigger condition is no longer met. When \verb|IN_5| returns low, a trigger condition is met again because \verb|IN_1| is still high. In this specific case, the double pulse is caused by the different width of the pulses.
         \begin{figure}
             \centering
             \includegraphics[width=.90\textwidth]{./Images/Trigger0x00000002.png}
-            \caption{Trigger configuration 0x00000002. The valid trigger (blue) is asserted only when \emph{in0} is active on its own. As such, two separated trigger pulses are produced because \emph{in4} goes high and returns low before \emph{in0}.}
+            \caption{Trigger configuration 0x00000002. The valid trigger (blue) is asserted only when \texttt{IN\_1} is active on its own. As such, two separated trigger pulses are produced because \texttt{IN\_5} goes high and returns low before \texttt{IN\_1}.}
             \label{Fig:exampleTrig00000002}
         \end{figure}\\
 \end{itemize}
+
+\section{Stretch and delay}
+The trigger logic is designed to detect edge transitions\footnote{Currently only negative edges are registered.} at the trigger inputs and produce a pulse for each transition detected. The pulse has an initial duration of one clock cycle (f= 160~MHz, one cycle 6.25~ns) and occurs on the next rising edge of the 160~MHz internal clock.\\
+Each pulse can be stretched and delayed in integer numbers of clock cycles to compensate for differences in cable length. Two separate 5-bit registers are used for the task: the value written in the registers will stretch/delay the pulse by a corresponding number of clock cycles.\\
+Diagram~\ref{Fig:trigger_stretchdelay} shows the effect of the delay and stretch words on the trigger logic.
+\begin{figure}
+  \centering
+  \includegraphics[width=.90\textwidth]{./Images/tlu_trigger_logic.pdf}
+  %\includesvg[width=.90\textwidth]{./Images/tlu_trigger_logic.svg}
+  \caption{Effect of the stretch and delay values. In1 is delayed by 2 clock cycles (t1= 12.5~ns) and stretched by 5 clock cycles (t2= 31.25~ns) to create a coincidence window with in5 and produce the resulting trigger signal.}
+  \label{Fig:trigger_stretchdelay}
+\end{figure}\\
+ Further details on how to configure the stretch and delay values are provided in section~\ref{ch:EUDAQPar}.
