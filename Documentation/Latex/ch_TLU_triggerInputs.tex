@@ -7,7 +7,7 @@ All the inputs are protected by clamping diodes that limit the input voltage in 
 The TLU has six trigger inputs than can be used to generate a valid trigger event. The number of possible different trigger combinations is $2^6= 64$ so a 64-bit word can be used to decide the valid combinations. In the hardware the 64-bit word is split into two 32-bit words (indicated as \gls{msb} and \gls{lsb} word) and the rules to generate the trigger can be specified by the user by writing in the two 32-bit registers \verb|TriggerPattern_highW| and \verb|TriggerPattern_lowW|: the first stores the 32 most significative bits of the trigger word, the latter stores the least significative bits.\\
 The user can select any combination of the trigger inputs and declare it a valid trigger pattern by setting a 1 in the corresponding trigger configuration word.
 Tables~\ref{tab:trigconfigLow} and ~\ref{tab:trigconfigHigh} show an example of how to determine the trigger configuration words: whenever a valid trigger combination is encountered, the user should put a 1 in the corresponding row under the PATTERN column. The pattern thus obtained is the required word to write in the configuration register.\\
-It is important to note that this solution allows the user to set veto pattern as well: for instance if only word 31 from table~\ref{tab:trigconfigLow} were picked, then the \gls{tlu} would only register a trigger when the combination $\overline{I_{5}}$ * $I_{4}$ * $I_{3}$ * $I_{2}$ * $I_{1}$ * $I_{0}$ was presented at its inputs. In other words, in this specific case $I_{5}$ would act as a veto signal and the \gls{tlu} would \textbf{not} produce a trigger if $I_{5}$=1.
+It is important to note that this solution allows the user to set veto pattern as well: for instance if only word 31 from table~\ref{tab:trigconfigLow} were picked, then the \gls{tlu} would only register a trigger when the combination $\overline{I_{5}}$ * $I_{4}$ * $I_{3}$ * $I_{2}$ * $I_{1}$ * $I_{0}$ was presented at its inputs. In other words, in this specific case $I_{5}$ would act as a veto signal and the \gls{tlu} would \textbf{not} produce a global trigger if $I_{5}$=1.
 
 % Please add the following required packages to your document preamble:
 % \usepackage{multirow}
@@ -143,14 +143,14 @@ We can now define the trigger logic to be used to assert a valid trigger: we onl
 \end{itemize}
 
 \section{Stretch and delay}
-The trigger logic is designed to detect edge transitions\footnote{Currently only negative edges are registered.} at the trigger inputs and produce a pulse for each transition detected. The pulse has an initial duration of one clock cycle (f= 160~MHz, one cycle 6.25~ns) and occurs on the next rising edge of the 160~MHz internal clock.\\
+The trigger logic is designed to detect edge transitions\footnote{Currently only negative edges are registered. A future firmware version will implement user-selectable positive or negative edge detection.} at the trigger inputs and produce a pulse for each transition detected. The pulse has an initial duration of one clock cycle (f= 160~MHz, one cycle 6.25~ns) and occurs on the next rising edge of the 160~MHz internal clock.\\
 Each pulse can be stretched and delayed in integer numbers of clock cycles to compensate for differences in cable length. Two separate 5-bit registers are used for the task: the value written in the registers will stretch/delay the pulse by a corresponding number of clock cycles.\\
 Diagram~\ref{Fig:trigger_stretchdelay} shows the effect of the delay and stretch words on the trigger logic.
 \begin{figure}
   \centering
-  \includegraphics[width=.90\textwidth]{./Images/tlu_trigger_logic.pdf}
+  \includegraphics[width=.95\textwidth]{./Images/tlu_trigger_logic.pdf}
   %\includesvg[width=.90\textwidth]{./Images/tlu_trigger_logic.svg}
   \caption{Effect of the stretch and delay values. In1 is delayed by 2 clock cycles (t1= 12.5~ns) and stretched by 5 clock cycles (t2= 31.25~ns) to create a coincidence window with in5 and produce the resulting trigger signal.}
   \label{Fig:trigger_stretchdelay}
 \end{figure}\\
- Further details on how to configure the stretch and delay values are provided in section~\ref{ch:EUDAQPar}.
+ Further details on how to configure the stretch and delay values are provided in section~\ref{ch:EUDAQPar}. 
