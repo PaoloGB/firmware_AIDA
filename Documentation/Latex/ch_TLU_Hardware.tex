@@ -51,7 +51,7 @@ The enable signals can be configured by programming two \gls{gpio} bus expanders
 In terms for functionalities, the four \gls{hdmi} connectors are identical with one exception: the clock signal from \verb|HDMI4| can be used as reference for the clock generator chip mounted on the hardware. For more details on this functionality refer to section~\ref{ch:clock}.
 
 \subsubsection{SFP cage}
-\brd hosts a \gls{sfp} cafe and a \gls{crd} chip that can be used to decode a data stream over optical/copper interface. The data from the stream is routed to the \gls{fpg} while the clock can be fed to the Si5345 to provide a clock reference.
+\brd hosts a \gls{sfp} cafe and a \gls{cdr} chip that can be used to decode a data stream over optical/copper interface. The data from the stream is routed to the \gls{fpga} while the clock can be fed to the Si5345 to provide a clock reference.
 
 \section{Clock LEMO}
 The board hosts a two-pin LEMO connector that can be used to provide a reference clock to the clock generator (see section~\ref{ch:clock}) or to output the clock from the \gls{tlu} to the external world, for instance to use it as a reference for another \gls{tlu}. The signal level is 3.3~V \gls{lvds}.\\
