@@ -1,0 +1,62 @@
+\chapter{EUDAQ Producer}\label{ch:eudaqprod}
+Current structure of a fmctlu producer event:
+\lstset{language=XML}
+\scriptsize 
+\begin{lstlisting}
+<Event>
+  <Type>2149999981</Type>
+  <Extendword>171577627</Extendword>
+  <Description>Ex0Tg</Description>
+  <Flag>0x00000018</Flag>
+  <RunN>0</RunN>
+  <StreamN>0</StreamN>
+  <EventN>0</EventN>
+  <TriggerN>88</TriggerN>
+  <Timestamp>0x0000000000000000  ->  0x0000000000000000</Timestamp>
+  <Timestamp>0  ->  0</Timestamp>
+  <Block_Size>0</Block_Size>
+  <SubEvents>
+    <Size>1</Size>
+    <Event>
+      <Type>2149999981</Type>
+      <Extendword>3634980144</Extendword>
+      <Description>TluRawDataEvent</Description>
+      <Flag>0x00000010</Flag>
+      <RunN>96</RunN>
+      <StreamN>4008428646</StreamN>
+      <EventN>88</EventN>
+      <TriggerN>88</TriggerN>
+      <Timestamp>0x0000000105b44f91  ->  0x0000000105b44faa</Timestamp>
+      <Timestamp>4390670225  ->  4390670250</Timestamp>
+      <Tags>
+        <Tag>PARTICLES=89</Tag>
+        <Tag>SCALER0=93</Tag>
+        <Tag>SCALER1=93</Tag>
+        <Tag>SCALER2=0</Tag>
+        <Tag>SCALER3=0</Tag>
+        <Tag>SCALER4=0</Tag>
+        <Tag>SCALER5=0</Tag>
+        <Tag>TEST=110011</Tag>
+        <Tag>trigger=</Tag>
+      </Tags>
+      <Block_Size>0</Block_Size>
+    </Event>
+  </SubEvents>
+</Event>
+\end{lstlisting}
+\normalsize
+\begin{description}
+  \item[Type] ??
+  \item[ExtendWord] ??
+  \item[Description]
+  \item[Flag] Independent from producer. See the \href{https://github.com/eudaq/eudaq/blob/master/main/lib/core/include/eudaq/Event.hh#L87}{EUDAQ documentation} for details.
+  \item[RunN]
+  \item[StreamN]
+  \item[EventN]
+  \item[TriggerN] Both in the event and subevent this is written byt the producer with \verb|ev->SetTriggerN(trigger_n);|
+  \item[Timestamp] The event timestamp is currently always 0. The subevent timestamps is written by the producer \verb|ev->SetTimestamp(ts_ns, ts_ns+25, false);|. The top line (0x0000000105b44f91, in the example) is coarse time stamp multiplied by 25, so it represents the time in nanoseconds. The bottom one (4390670225) is the same number but written in decimal format instead of hexadecimal.
+  \item[PARTICLES] Number of pre-veto triggers recorded by the \gls{tlu}: the trigger logic can detect a valid trigger condition even when the unit is vetoed. In this case no trigger is issued to the \gls{dut}s but the number of such triggers is stored as number of particles. \verb|ev->SetTag("PARTICLES", std::to_string(pt));|
+  \item[SCALER\#] Number of triggers edges seen by the specific discriminator. \verb|ev->SetTag("SCALER", std::to_string(sl));|
+  \item[???] Event type from \gls{tlu} is missing?
+  \item[???] Input trig, i.e. the actual firing inputs should be in TRIGGER but there seems to be nothing there
+\end{description}

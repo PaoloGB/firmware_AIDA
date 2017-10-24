@@ -3,11 +3,11 @@ Board \brd is an evolution of the miniTLU designed at the \gls{uob}. The board s
 
 \section{Inputs and interfaces}\label{ch:hwDUT}
 \subsubsection{FMC}
-The board must be plugged onto a \gls{fmc} carrier board with an \gls{fpga} in order to function correctly. The connection is achieved using a low pin count \gls{fmc} connector. The list of the pins used is provided in appendix at page~\pageref{ch:appendix}.\\
+The board must be plugged onto a \gls{fmc} carrier board with an \gls{fpga} in order to function correctly. The connection is achieved using a low pin count \gls{fmc} connector. The list of the pins used and the corresponding signal within the \gls{fpga} are provided in appendix at page~\pageref{ch:appendix}.\\
 
 \subsubsection{Device under test}\label{ch:dut}
 The \gls{dut}s are connected to the \gls{tlu} using standard size \gls{hdmi} connectors\footnote{In the miniTLU hardware there were mini\gls{hdmi} connectors.}.\\
-In this version of the hardware, up to four \gls{dut}s can be connected to the board. In this document the connectors will be referred to as \verb|HDMI1|, \verb|HDMI2|, \verb|HDMI3| and \verb|HDMI4|.\\
+In the current version of the hardware, up to four \gls{dut}s can be connected to the board. In this document the connectors will be referred to as \verb|HDMI1|, \verb|HDMI2|, \verb|HDMI3| and \verb|HDMI4|.\\
 The connectors expect 3.3~V \gls{lvds} signals and are bi-directional, i.e. any differential pair can be configured to be an output (signal from the TLU to the DUT) or an input (signals from the DUT to the TLU) by using half-duplex line transceivers. Figure~\ref{fig:LVDSTransceiver} illustrates how the differential pairs are connected to the transceivers.
 \begin{alertinfo}{Note}
     The input part of the transceiver is configured to be always on. This means that signals going \emph{into} the \gls{tlu} are always routed to the logic (\gls{fpga}). By contrast, the output transceivers have to be enabled and are off by default: signal sent from the logic to the \gls{dut}s cannot reach the devices unless the corresponding enable signal is active.
@@ -47,8 +47,11 @@ The enable signals can be configured by programming two \gls{gpio} bus expanders
   \centering
   \includegraphics[width=.80\textwidth]{./Images/LVDS_transceiver.pdf}
   \caption{Internal configuration of the HDMI pins for the DUTs. The path from the DUT to the FPGA is always active. The path from the FPGA to the DUT can be enabled or disabled by the user.}\label{fig:LVDSTransceiver}
-\end{figure}
+\end{figure}\\
 In terms for functionalities, the four \gls{hdmi} connectors are identical with one exception: the clock signal from \verb|HDMI4| can be used as reference for the clock generator chip mounted on the hardware. For more details on this functionality refer to section~\ref{ch:clock}.
+
+\subsubsection{SFP cage}
+\brd hosts a \gls{sfp} cafe and a \gls{cdr} chip that can be used to decode a data stream over optical/copper interface. The data from the stream is routed to the \gls{fpga} while the clock can be fed to the Si5345 to provide a clock reference.
 
 \section{Clock LEMO}
 The board hosts a two-pin LEMO connector that can be used to provide a reference clock to the clock generator (see section~\ref{ch:clock}) or to output the clock from the \gls{tlu} to the external world, for instance to use it as a reference for another \gls{tlu}. The signal level is 3.3~V \gls{lvds}.\\
@@ -78,7 +81,8 @@ The correspondence between DAC slave and thresholds is shown in table~\ref{tab:D
 
 
 \section{I$^{2}$C slaves}\label{ch:i2c}
-The \gls{i2c} interface on the \brd can be used to configured several features of the board. Table~\ref{tab:I2C addresses} lists all the valid addresses and the corresponding slave on the board. The Enclustra lines refer to slaves located on the PM3 board; these slaves can be ignored with the exception of the bus expander. The Enclustra expander is used to enable/disable the \gls{i2c} lines going to the \gls{fmc} connector.
+The \gls{i2c} interface on the \brd can be used to configured several features of the board.\\
+Table~\ref{tab:I2C addresses} lists all the valid addresses and the corresponding slave on the board. The Enclustra lines refer to slaves located on the PM3 board; these slaves can be ignored with the exception of the bus expander. The Enclustra expander is used to enable/disable the \gls{i2c} lines going to the \gls{fmc} connector.
 \begin{alertinfo}{Note}
     After a power cycle the Enclustra expander is configured to disable the \gls{i2c} interface pins. This means that it is impossible to communicate to any \gls{i2c} slave on the \gls{tlu} until the expander has been enabled.\\
     The interface is enable by setting bit 7 to 0 on register 0x01 of the Enclustra expander.
@@ -95,7 +99,8 @@ The \gls{i2c} interface on the \brd can be used to configured several features o
     IC5           & 24AA025E48T & EEPROM                   & 0x50             \\ \hline
     IC6           & PCA9539PW   & I2C Expander1            & 0x74             \\ \hline
     IC7           & PCA9539PW   & I2C Expander2            & 0x75             \\ \hline
-    IC8\_9        & Si5345A     & Clock Generator           & 0x68             \\ \hline
+    IC8           & ADN2814ACPZ & CDR                      & 0x60             \\ \hline
+    IC8\_9        & Si5345A     & Clock Generator          & 0x68             \\ \hline
     \multicolumn{4}{|l|}{Enclustra slaves}                                                    \\ \hline
                   &             & Enclustra Bus Expander   & 0x21             \\ \hline
                   &             & Enclustra System Monitor & 0x21             \\ \hline
@@ -116,6 +121,9 @@ The identifier is always in the form: \verb|0xD8 80 39 XX XX XX| with the top th
 
 \subsubsection{Bus expander}
 The expanders are used as electronic switched to enable and disable individual lines. Each expander has two 8-bit banks; the values of the bits, as well as their direction (input/output) can be configured via the \gls{i2c} interface. For the purpose of the \gls{tlu}, all the expander pins should be configured as outputs since they must drive the enable signals on the \gls{dut} transceivers.
+
+\subsubsection{Clock and data recovery chip}
+The \gls{cdr} is used in conjunction with the \gls{sfp} cage to recover data and clock from the incoming bit stream. The functionality has not yet been implemented in the firmware so the \gls{i2c} slave can be ignored for now.
 
 \subsubsection{Clock generator}
 The clock for \brd can be generated using various external or internal references (see section~\ref{ch:clock} for further details). In order to reduce any jitter from the clock source and to provide a stable clock, the board hosts a Si5345 clock generator that needs to be configured via \gls{i2c} interface.\\
