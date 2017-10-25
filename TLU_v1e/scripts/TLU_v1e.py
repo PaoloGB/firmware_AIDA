@@ -42,7 +42,7 @@ class TLU:
         self.VrefExt= parsed_cfg.getfloat(section_name, "VRefExt")
 
         #self.intRefOn= False #Internal reference is OFF by default
-        self.intRefOn= bool(parsed_cfg.get(section_name, "intRefOn"))
+        self.intRefOn= int(parsed_cfg.get(section_name, "intRefOn"))
 
 
         self.fwVersion = self.hw.getNode("version").read()

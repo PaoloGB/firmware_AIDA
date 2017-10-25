@@ -51,7 +51,7 @@ class MyPrompt(cmd.Cmd):
         (without quotation marks)"""
     	print "==== COMMAND RECEIVED: PARSE CONFIG"
     	#self.testme()
-        parsed_cfg= self.open_cfg_file(args, "/users/phpgb/workspace/myFirmware/AIDA/TLU_v1e/scripts/localConf.conf")
+        parsed_cfg= self.open_cfg_file(args, "./localConf.conf")
         try:
             theID = parsed_cfg.getint("Producer.fmctlu", "confid")
             print "\t", theID
@@ -69,10 +69,11 @@ class MyPrompt(cmd.Cmd):
         """Interrogates the TLU and prints the number of triggers seen by the input discriminators"""
         TLU.getChStatus()
         TLU.getAllChannelsCounts()
+        TLU.getPostVetoTrg()
         return
 
     def do_startRun(self, args):
-        """Starts the TLU run"""
+        """Starts the TLU run. If a number is specified, this number will be appended to the file name as Run_#"""
     	print "==== COMMAND RECEIVED: STARTING TLU RUN"
     	#startTLU( uhalDevice = self.hw, pychipsBoard = self.board,  writeTimestamps = ( options.writeTimestamps == "True" ) )
         arglist = args.split()
@@ -152,7 +153,12 @@ class MyPrompt(cmd.Cmd):
     def do_quit(self, args):
         """Quits the program."""
         print "==== COMMAND RECEIVED: QUITTING TLU CONSOLE"
-        #raise SystemExit
+        if TLU.isRunning:
+            TLU.isRunning= False
+            TLU.stop(False, False)
+            self.root_file.Write()
+            self.root_file.Close()
+            print "Terminating run"
 	return True
 
     def testme(self):
