@@ -198,7 +198,7 @@ class TLU:
         ## Enable or disable the output clock to the differential LEMO output
         bank=1
         mask= 0x10
-        res= self.IC7.getIOReg(bank)
+        res= self.IC7.getOutputs(bank)
         oldStatus= res[0]
         newStatus= oldStatus & ~mask
         outStat= "enabled"
@@ -208,7 +208,7 @@ class TLU:
         print "  Clk LEMO", outStat
         if verbose:
             print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
-        self.IC7.setIOReg(bank, newStatus)
+        self.IC7.setOutputs(bank, newStatus)
         return newStatus
 
     def enableCore(self):
