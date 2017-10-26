@@ -6,6 +6,7 @@
 /Enclustra_tests/
 /TLU_v1e/scripts/datafiles
 /Data/*
+/TLU_v1e/.Xil/
 *.pyc
 .svn/*
 *.jou
