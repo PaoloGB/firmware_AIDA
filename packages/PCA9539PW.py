@@ -84,3 +84,11 @@ class PCA9539PW:
             return
         values = values & 0xFF
         self.writeReg(bank+2, values)
+
+    def getOutputs(self, bank):
+        #Read the state of the outputs (i.e. what value is being written to them)
+        if (bank < 0) | (bank > 1):
+            print "PCA9539PW - ERROR: bank should be 0 or 1"
+            return
+        res= self.readReg(bank+2, 1)
+        return res

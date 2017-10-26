@@ -84,11 +84,11 @@ class TLU:
         self.IC6=PCA9539PW(self.TLU_I2C, exp1_addr)
         self.IC6.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(0, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(0, 0x77)# If output, set to XX
+        self.IC6.setOutputs(0, 0xFF)# If output, set to XX
 
         self.IC6.setInvertReg(1, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(1, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(1, 0x77)# If output, set to XX
+        self.IC6.setOutputs(1, 0xFF)# If output, set to XX
 
         #self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
         exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2_Addr"), 16)
@@ -119,13 +119,13 @@ class TLU:
         print "  Setting DUT:", dutN, "to", enable
         if (verbose > 1):
             print "\tBank", bank, "Nibble", nibble
-        res= self.IC6.getIOReg(bank)
+        res= self.IC6.getOutputs(bank)
         oldStatus= res[0]
         mask= 0xF << 4*nibble
         newStatus= oldStatus & (~mask)
         if (not enable): # we want to write 0 to activate the outputs so check opposite of "enable"
             newStatus |= mask
-        self.IC6.setIOReg(bank, newStatus)
+        self.IC6.setOutputs(bank, newStatus)
 
         if verbose:
             print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
@@ -145,13 +145,13 @@ class TLU:
         print "  Setting DUT:", dutN, "pins status to", hex(enable)
         if (verbose > 1):
             print "\tBank", bank, "Nibble", nibble
-        res= self.IC6.getIOReg(bank)
+        res= self.IC6.getOutputs(bank)
         oldStatus= res[0]
         mask= 0xF << 4*nibble
         newnibble= (enable & 0xF) << 4*nibble # bits we want to change are marked with 1
         newStatus= (oldStatus & (~mask)) | (newnibble & mask)
 
-        self.IC6.setIOReg(bank, newStatus)
+        self.IC6.setOutputs(bank, newStatus)
 
         if (verbose > 0):
             self.getDUTOutpus(dutN, verbose)
@@ -175,7 +175,7 @@ class TLU:
         maskLow= 1 << (1* dutN) #CLK FROM FPGA
         maskHigh= 1<< (1* dutN +4) #CLK FROM Si5345
         mask= maskLow | maskHigh
-        res= self.IC7.getIOReg(bank)
+        res= self.IC7.getOutputs(bank)
         oldStatus= res[0]
         newStatus= oldStatus & ~mask #set both bits to zero
         outStat= ""
@@ -191,7 +191,7 @@ class TLU:
         print "  Setting DUT:", dutN, "clock source to", outStat
         if (verbose > 1):
             print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
-        self.IC7.setIOReg(bank, newStatus)
+        self.IC7.setOutputs(bank, newStatus)
         return newStatus
 
     def enableClkLEMO(self, enable= False, verbose= False):
@@ -233,7 +233,7 @@ class TLU:
             return -1
         bank= dutN//2 # DUT0 and DUT1 are on bank 0. DUT2 and DUT3 on bank 1
         nibble= dutN%2 # DUT0 and DUT2 are on nibble 0. DUT1 and DUT3 are on nibble 1
-        res= self.IC6.getIOReg(bank)
+        res= self.IC6.getOutputs(bank)
         dut_status= res[0]
         dut_lines= ["CONT", "SPARE", "TRIG", "BUSY"]
         dut_status= 0x0F & (dut_status >> (4*nibble))
