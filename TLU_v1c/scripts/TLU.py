@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import uhal;
 import pprint;
-from FmcTluI2c import *
+#from FmcTluI2c import *
 from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
