@@ -114,11 +114,15 @@ ARCHITECTURE rtl OF DUTInterfaces IS
 
   signal s_DUT_interface_mode_modifier : std_logic_vector((2*g_NUM_DUTS)-1 downto 0) := (others => '1');  
   signal s_IgnoreShutterVeto : std_logic := '0';  -- --! When high the shutter won't veto triggers when low.
+  
+  signal s_SPILL_delay : std_logic_vector(31 downto 0) := (others => '0');
+  signal s_SPILL_wait : std_logic_vector(31 downto 0) := (others => '0');
+  signal s_SPILL_width : std_logic_vector(31 downto 0) := (others => '0');
 
   
   -- Signal for IPBus
-  constant c_N_CTRL : positive := 8;
-  constant c_N_STAT : positive := 8;
+  constant c_N_CTRL : positive := 9;
+  constant c_N_STAT : positive := 9;
   signal s_status_to_ipbus, s_sync_status_to_ipbus : ipb_reg_v(c_N_STAT-1 downto 0);
   signal s_control_from_ipbus,s_sync_control_from_ipbus : ipb_reg_v(c_N_CTRL-1 downto 0);
                                                                
@@ -169,6 +173,7 @@ BEGIN
   s_IgnoreShutterVeto           <= s_sync_control_from_ipbus(2)(0);
   s_DUT_interface_mode          <= s_sync_control_from_ipbus(3)((2*g_NUM_DUTS)-1 downto 0);
   s_DUT_interface_mode_modifier <= s_sync_control_from_ipbus(4)((2*g_NUM_DUTS)-1 downto 0);
+  
   
     -- Map the status registers
   s_status_to_ipbus(0) <= std_logic_vector(to_unsigned(0,g_IPBUS_WIDTH-g_NUM_DUTS)) & s_DUT_mask;
