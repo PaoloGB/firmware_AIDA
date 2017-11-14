@@ -180,7 +180,7 @@ class TLU:
         newStatus= oldStatus & ~mask #set both bits to zero
         outStat= ""
         if clkSrc==0:
-            newStatus = newStatus | mask
+            newStatus = newStatus
             outStat= "disabled"
         elif clkSrc==1:
             newStatus = newStatus | maskLow
