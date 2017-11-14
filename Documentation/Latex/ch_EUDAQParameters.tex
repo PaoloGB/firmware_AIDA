@@ -8,6 +8,12 @@ The parameters must be included in the INI or CONF file passed to the main windo
   \label{fig:EUDAQGui}
 \end{figure}\\
 Not all parameters are needed; if one of the parameters is not present in the files, the code will generally assume a default value, indicated in brackets in the following document \verb|[type, default]|.
+\begin{alertinfo}{Case sensitiveness}
+    All parameters names are case sensitive!\\
+    Please ensure to use the correct capitalization.\\
+    A misspelled parameter will be ignored and its default value will be used instead.
+\end{alertinfo}
+
 \section{INI file}
 \begin{description}
   \item[initid] \verb|[string, "0"]| Does not serve any purpose in the code but can be useful to identify configuration settings used in a specific run. As an example, the user can write a mnemonic such as `Testbeam\_April' or `2017\_10\_init' to help identifying a specific configuration. EUDAQ will store this information in the run data.
