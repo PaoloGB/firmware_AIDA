@@ -23,12 +23,12 @@ use work.ipbus.ALL;
 
 entity top_EUDET_dummy is
     generic(
-    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0001"; -- Firmware revision. Remember to change this as needed.
+    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0003"; -- Firmware revision. Remember to change this as needed.
     g_NUM_DUTS  : positive := 4; -- <- was 3
     g_NUM_TRIG_INPUTS   :positive := 6;-- <- was 4
     g_NUM_EDGE_INPUTS   :positive := 6;--  <-- was 4
     g_NUM_EXT_SLAVES    :positive :=8;--  <-- ??
-    g_EVENT_DATA_WIDTH  :positive := 64;--  <-- ??
+    g_EVENT_DATA_WIDTH  :positive := 32;--  <-- ??
     g_IPBUS_WIDTH   :positive := 32;--  <-- was 32 
     g_SPILL_COUNTER_WIDTH   :positive := 12;--  <-- ??
     g_BUILD_SIMULATED_MAC   :integer := 0
@@ -71,18 +71,13 @@ entity top_EUDET_dummy is
         triggers_o: out std_logic_vector(g_NUM_DUTS-1 downto 0); --Trigger lines to DUTs
         dut_clk_i: in std_logic_vector(g_NUM_DUTS-1 downto 0); --Clock from DUTs
         dut_clk_o: out std_logic_vector(g_NUM_DUTS-1 downto 0) --Clock to DUTs
+  
         
         --reset_or_clk_n_o: out std_logic_vector(g_NUM_DUTS-1 downto 0); --T0 synchronization signal
         --reset_or_clk_p_o: out std_logic_vector(g_NUM_DUTS-1 downto 0);
         --shutter_to_dut_n_o: out std_logic_vector(g_NUM_DUTS-1 downto 0); --Shutter output
-        --shutter_to_dut_p_o: out std_logic_vector(g_NUM_DUTS-1 downto 0);
-                
-     --TLU trigger inputs   
-        --threshold_discr_n_i: in std_logic_vector(g_NUM_TRIG_INPUTS-1 downto 0);
-        --threshold_discr_p_i: in std_logic_vector(g_NUM_TRIG_INPUTS-1 downto 0)
-        --gpio_hdr: out std_logic_vector(3 downto 0);
-        --extclk_n_b: inout std_logic; --External clock in or clock output
-        --extclk_p_b: inout std_logic
+        --shutter_to_dut_p_o: out std_logic_vector(g_NUM_DUTS-1 downto 0);         
+
     );
 
 end top_EUDET_dummy;
@@ -137,6 +132,12 @@ architecture rtl of top_EUDET_dummy is
     SIGNAL strobe_8x_logic      : std_logic;                                             --! Pulses one cycle every 4 of 16x clock.
     SIGNAL strobe_4x_logic       : std_logic;                                             -- one pulse every 4 cycles of clk_4x
     SIGNAL trigger_count         : std_logic_vector(g_IPBUS_WIDTH-1 DOWNTO 0);
+    type   myTrigArray is array (g_NUM_DUTS-1 downto 0) of std_logic_vector(g_IPBUS_WIDTH-1 DOWNTO 0);
+    signal TrigNArray : myTrigArray;
+    SIGNAL TriggerNumber         : std_logic_vector(g_EVENT_DATA_WIDTH-1 DOWNTO 0);
+    SIGNAL TriggerNumberStrobe   :  std_logic_vector(g_NUM_DUTS-1 downto 0);
+    SIGNAL stretchFlags          : std_logic_vector(g_NUM_DUTS-1 downto 0) := "0011"; -- ! define which dummyDUT have their busy line stretched
+
     SIGNAL trigger_times         : t_triggerTimeArray(g_NUM_TRIG_INPUTS-1 DOWNTO 0);      -- ! trigger arrival time ( w.r.t. logic_strobe)
     SIGNAL triggers              : std_logic_vector(g_NUM_TRIG_INPUTS-1 DOWNTO 0);
     SIGNAL veto_o                : std_logic;                                             --! goes high when one or more DUT are busy
@@ -154,7 +155,7 @@ architecture rtl of top_EUDET_dummy is
     port (
         clk_4x_logic_i          : IN     std_logic ;
         strobe_4x_logic_i       : IN     std_logic ;                                  --! goes high every 4th clock cycle
-        trigger_counter_i       : IN     std_logic_vector (g_IPBUS_WIDTH-1 DOWNTO 0); --! Number of trigger events since last reset
+        trigger_counter_i       : IN     std_logic_vector (g_EVENT_DATA_WIDTH-1 DOWNTO 0); --! Number of trigger events since last reset
         trigger_i               : IN     std_logic ;                                  --! goes high when trigger logic issues a trigger
         reset_or_clk_to_dut_i   : IN     std_logic ;                                  --! Synchronization signal. Passed TO DUT pins
         shutter_to_dut_i        : IN     std_logic ;                                  --! Goes high TO indicate data-taking active. DUTs report busy unless ignoreShutterVeto IPBus flag is set high
@@ -181,9 +182,10 @@ architecture rtl of top_EUDET_dummy is
         CLK : in  STD_LOGIC;         --! this is the USB clock.
         RST : in STD_LOGIC;          --! Synchronous clock
         Trigger : in STD_LOGIC;      --! Trigger from TLU
+        stretchBusy: in STD_LOGIC;   --! flag: if 1 extend the BUSY signal
         Busy : out STD_LOGIC;        --! Busy to TLU
         DUTClk : out STD_LOGIC;      --! clock from DUT
-        TriggerNumber : out STD_LOGIC_VECTOR(15 downto 0);
+        TriggerNumber : out STD_LOGIC_VECTOR(31 downto 0);
         TriggerNumberStrobe : out STD_LOGIC;
         FSM_Error : out STD_LOGIC
         );
@@ -191,41 +193,27 @@ end component;
 ----------------------------------------------
 ----------------------------------------------
 
---    COMPONENT T0_Shutter_Iface
---    PORT (
---        clk_4x_i      : IN     std_logic;
---        clk_4x_strobe : IN     std_logic;
---        ipbus_clk_i   : IN     std_logic;
---        ipbus_i       : IN     ipb_wbus;
---        T0_o          : OUT    std_logic;
---        ipbus_o       : OUT    ipb_rbus;
---        shutter_o     : OUT    std_logic
---    );
---    END COMPONENT T0_Shutter_Iface;
-----------------------------------------------
-----------------------------------------------
-
---   COMPONENT eventBuffer
---   GENERIC (
---        g_EVENT_DATA_WIDTH   : positive := 64;
---        g_IPBUS_WIDTH        : positive := 32;
---        g_READ_COUNTER_WIDTH : positive := 16
---   );
---   PORT (
---        clk_4x_logic_i    : IN     std_logic ;
---        data_strobe_i     : IN     std_logic ;                                     -- Indicates data TO transfer
---        event_data_i      : IN     std_logic_vector (g_EVENT_DATA_WIDTH-1 DOWNTO 0);
---        ipbus_clk_i       : IN     std_logic ;
---        ipbus_i           : IN     ipb_wbus ;
---        ipbus_reset_i     : IN     std_logic ;
---        strobe_4x_logic_i : IN     std_logic ;
---        --trigger_count_i   : IN     std_logic_vector (g_IPBUS_WIDTH-1 DOWNTO 0); --! Not used yet.
---        rst_fifo_o        : OUT    std_logic ;                                     --! rst signal TO first level fifos
---        buffer_full_o     : OUT    std_logic ;                                     --! Goes high when event buffer almost full
---        ipbus_o           : OUT    ipb_rbus ;
---        logic_reset_i     : IN     std_logic                                       -- reset buffers when high. Synch withclk_4x_logic
---   );
---   END COMPONENT eventBuffer;
+   COMPONENT eventBuffer
+   GENERIC (
+        g_EVENT_DATA_WIDTH   : positive := 32;
+        g_IPBUS_WIDTH        : positive := 32;
+        g_READ_COUNTER_WIDTH : positive := 16
+   );
+   PORT (
+        clk_4x_logic_i    : IN     std_logic ;
+        data_strobe_i     : IN     std_logic ;                                     -- Indicates data TO transfer
+        event_data_i      : IN     std_logic_vector (g_EVENT_DATA_WIDTH-1 DOWNTO 0);
+        ipbus_clk_i       : IN     std_logic ;
+        ipbus_i           : IN     ipb_wbus ;
+        ipbus_reset_i     : IN     std_logic ;
+        strobe_4x_logic_i : IN     std_logic ;
+        --trigger_count_i   : IN     std_logic_vector (g_IPBUS_WIDTH-1 DOWNTO 0); --! Not used yet.
+        rst_fifo_o        : OUT    std_logic ;                                     --! rst signal TO first level fifos
+        buffer_full_o     : OUT    std_logic ;                                     --! Goes high when event buffer almost full
+        ipbus_o           : OUT    ipb_rbus ;
+        logic_reset_i     : IN     std_logic                                       -- reset buffers when high. Synch withclk_4x_logic
+   );
+   END COMPONENT eventBuffer;
 ----------------------------------------------
 ----------------------------------------------
 --    COMPONENT eventFormatter
@@ -291,63 +279,8 @@ end component;
     );
     END COMPONENT logic_clocks;
 ----------------------------------------------
-----------------------------------------------
---    COMPONENT triggerInputs_newTLU
---    GENERIC (
---        g_NUM_INPUTS  : natural  := 1;
---        g_IPBUS_WIDTH : positive := 32
---    );
---    PORT (
---        --cfd_discr_p_i        : IN     std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);        --! Inputs from constant-fraction discriminators
---        --cfd_discr_n_i        : IN     std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);        --! Input from CFD
---        clk_4x_logic         : IN     std_logic ;                                        --! Rising edge active. By default = 4*40MHz = 160MHz
---        clk_200_i : IN     std_logic ;
---        strobe_4x_logic_i    : IN     std_logic ;                                        --! Pulses high once every 4 cycles of clk_4x_logic
---        threshold_discr_p_i  : IN     std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);        --! inputs from threshold comparators
---        threshold_discr_n_i  : IN     std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);        --! inputs from threshold comparators
---        reset_i              : IN     std_logic ;
---        trigger_times_o      : OUT    t_triggerTimeArray (g_NUM_INPUTS-1 DOWNTO 0);      --! trigger arrival time ( w.r.t. logic_strobe)
---        trigger_o            : OUT    std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);        --!  Goes high on leading edge of trigger, in sync with clk_4x_logic_i
---        --trigger_debug_o      : OUT    std_logic_vector ( ((2*g_NUM_INPUTS)-1) DOWNTO 0); --! Copy of input trigger level. High bits CFD, Low threshold
---        edge_rising_times_o  : OUT    t_triggerTimeArray (g_NUM_INPUTS-1 DOWNTO 0);      --! edge arrival time ( w.r.t. logic_strobe)
---        edge_falling_times_o : OUT    t_triggerTimeArray (g_NUM_INPUTS-1 DOWNTO 0);      --! edge arrival time ( w.r.t. logic_strobe)
---        edge_rising_o        : OUT    std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);        --! High when rising edge. Syncronous with clk_4x_logic_i
---        edge_falling_o       : OUT    std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);        --! High when falling edge
---        ipbus_clk_i          : IN     std_logic ;
---        ipbus_reset_i        : IN     std_logic ;
---        ipbus_i              : IN     ipb_wbus ;                                         --! Signals from IPBus core TO slave
---        ipbus_o              : OUT    ipb_rbus ;                                         --! signals from slave TO IPBus core
---        clk_8x_logic_i      : IN     std_logic ;                                        --! 640MHz clock ( 16x 40MHz )
---        strobe_8x_logic_i   : IN     std_logic                                          --! Pulses one cycle every 4 of 8x clock.
---    );
---    END COMPONENT triggerInputs_newTLU;
-----------------------------------------------
-----------------------------------------------
---    COMPONENT triggerLogic
---    GENERIC (
---        g_NUM_INPUTS  : positive := 4;
---        g_IPBUS_WIDTH : positive := 32
---    );
---    PORT (
---        clk_4x_logic_i      : IN     std_logic ;                                   -- ! Rising edge active
---        ipbus_clk_i         : IN     std_logic ;
---        ipbus_i             : IN     ipb_wbus ;                                    -- Signals from IPBus core TO slave
---        ipbus_reset_i       : IN     std_logic ;
---        logic_reset_i       : IN     std_logic ;                                   -- active high. Synchronous with clk_4x_logic
---        logic_strobe_i      : IN     std_logic ;                                   -- ! Pulses high once every 4 cycles of clk_4x_logic
---        trigger_i           : IN     std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);   -- ! High when trigger from input connector active
---        trigger_times_i     : IN     t_triggerTimeArray (g_NUM_INPUTS-1 DOWNTO 0); --! trigger arrival time
---        veto_i              : IN     std_logic ;                                   -- ! Halts triggers when high
---        trigger_o           : OUT    std_logic_vector (g_NUM_INPUTS-1 DOWNTO 0);   -- ! High when trigger from input connector active and enabled
---        trigger_times_o     : OUT    t_triggerTimeArray (g_NUM_INPUTS-1 DOWNTO 0); --! trigger arrival time
---        event_number_o      : OUT    std_logic_vector (g_IPBUS_WIDTH-1 DOWNTO 0);  -- starts at one. Increments for each post_veto_trigger
---        ipbus_o             : OUT    ipb_rbus ;                                    -- signals from slave TO IPBus core
---        post_veto_trigger_o : OUT    std_logic ;                                   -- ! goes high when trigger passes
---        pre_veto_trigger_o  : OUT    std_logic ;
---        trigger_active_o    : OUT    std_logic                                     --! Goes high when triggers are active ( ie. not veoted)
---    );
---    END COMPONENT triggerLogic;
-    
+
+
     COMPONENT i2c_master
         PORT (
            i2c_scl_i     : IN     std_logic;
@@ -520,33 +453,7 @@ begin
         logic_reset_o         => logic_reset
     );    
 
-----------------------------------------------
---    I5 : triggerInputs_newTLU 
---    GENERIC MAP (
---        g_NUM_INPUTS  => g_NUM_TRIG_INPUTS,
---        g_IPBUS_WIDTH => 32
---    )
---    PORT MAP (
---        clk_4x_logic         => clk_4x_logic,
---        clk_200_i => clk_200,
---        strobe_4x_logic_i    => strobe_4x_logic,
---        threshold_discr_p_i  => threshold_discr_p_i,
---        threshold_discr_n_i  => threshold_discr_n_i,
---        reset_i              => logic_reset,
---        trigger_times_o      => trigger_times,
---        trigger_o            => triggers,
---        --trigger_debug_o      => OPEN,
---        edge_rising_times_o  => s_edge_rise_times,
---        edge_falling_times_o => s_edge_fall_times,
---        edge_rising_o        => s_edge_rising,
---        edge_falling_o       => s_edge_falling,
---        ipbus_clk_i          => clk_ipb,
---        ipbus_reset_i        => rst_ipb,
---        ipbus_i              => ipbww(N_SLV_TRGIN),
---        ipbus_o              => ipbrr(N_SLV_TRGIN),
---        clk_8x_logic_i      => clk_8x_logic,
---        strobe_8x_logic_i   => strobe_8x_logic
---    );
+
 
 ------------------------------------------      
 --    I6 : eventFormatter
@@ -588,38 +495,27 @@ begin
 --    );
 
 ------------------------------------------
---    I7 : eventBuffer
---    GENERIC MAP (
---        g_EVENT_DATA_WIDTH   => g_EVENT_DATA_WIDTH,
---        g_IPBUS_WIDTH        => g_IPBUS_WIDTH,
---        g_READ_COUNTER_WIDTH => 14
+    I7 : eventBuffer
+    GENERIC MAP (
+        g_EVENT_DATA_WIDTH   => 32,
+        g_IPBUS_WIDTH        => g_IPBUS_WIDTH,
+        g_READ_COUNTER_WIDTH => 13
         
---    )
---    PORT MAP (
---        clk_4x_logic_i    => clk_4x_logic,
---        data_strobe_i     => data_strobe,
---        event_data_i      => event_data,
---        ipbus_clk_i       => clk_ipb,
---        ipbus_i           => ipbww(N_SLV_EVBUF),
---        ipbus_reset_i     => rst_ipb,
---        strobe_4x_logic_i => strobe_4x_logic,
---        rst_fifo_o        => rst_fifo_o,
---        buffer_full_o     => buffer_full_o,
---        ipbus_o           => ipbrr(N_SLV_EVBUF),
---        logic_reset_i     => logic_reset
---    );
+    )
+    PORT MAP (
+        clk_4x_logic_i    => clk_4x_logic,
+        data_strobe_i     => TriggerNumberStrobe(0),
+        event_data_i      => TrigNArray(0),
+        ipbus_clk_i       => clk_ipb,
+        ipbus_i           => ipbww(N_SLV_EVBUF),
+        ipbus_reset_i     => rst_ipb,
+        strobe_4x_logic_i => strobe_4x_logic,
+        rst_fifo_o        => rst_fifo_o,
+        buffer_full_o     => buffer_full_o,
+        ipbus_o           => ipbrr(N_SLV_EVBUF),
+        logic_reset_i     => logic_reset
+    );
     
---------------------------------------------
---    I8 : T0_Shutter_Iface
---    PORT MAP (
---        clk_4x_i      => clk_4x_logic,
---        clk_4x_strobe => strobe_4x_logic,
---        T0_o          => T0_o,
---        shutter_o     => s_shutter,
---        ipbus_clk_i   => clk_ipb,
---        ipbus_i       => ipbww(N_SLV_SHUT),
---        ipbus_o       => ipbrr(N_SLV_SHUT)
---    );
 
 ------------------------------------------
 --    I9 : DUTInterfaces
@@ -652,30 +548,7 @@ begin
 --         veto_o                  => veto_o
 --    );
     
------------------------------------------- 
---        I10 : triggerLogic
---        GENERIC MAP (
---            g_NUM_INPUTS  => g_NUM_TRIG_INPUTS,
---            g_IPBUS_WIDTH => g_IPBUS_WIDTH
---        )
---        PORT MAP (
---            clk_4x_logic_i      => clk_4x_logic,
---            ipbus_clk_i         => clk_ipb,
---            ipbus_i             => ipbww(N_SLV_TRGLGC),
---            ipbus_reset_i       => rst_ipb,
---            logic_reset_i       => s_triggerLogic_reset,
---            logic_strobe_i      => strobe_4x_logic,
---            trigger_i           => triggers,
---            trigger_times_i     => trigger_times,
---            veto_i              => overall_veto,
---            trigger_o           => postVetotrigger,
---            trigger_times_o     => postVetoTrigger_times,
---            event_number_o      => trigger_count,
---            ipbus_o             => ipbrr(N_SLV_TRGLGC),
---            post_veto_trigger_o => overall_trigger,
---            pre_veto_trigger_o  => OPEN,
---            trigger_active_o    => leds(2)
---        );     
+  
          
 -------------TEST AREA------------    
 --    test0: entity work.test_inToOut
@@ -728,10 +601,11 @@ begin
            CLK => sysclk_40,
            RST => cont_i(iDUT),-- coming from HDMI pin
            Trigger => triggers_i(iDUT), --coming from HDMI pin
+           stretchBusy => stretchFlags(iDUT), 
            Busy => busy_o(iDUT), --going out on HDMI pin
            DUTClk => dut_clk_o(iDUT), --going out on HDMI pin
-           --TriggerNumber => TriggerNumber(DUT),
-           --TriggerNumberStrobe => TriggerNumberStrobe(DUT),
+           TriggerNumber => TrigNArray(iDUT),
+           TriggerNumberStrobe => TriggerNumberStrobe(iDUT),
            FSM_Error => open
            );
 
@@ -763,19 +637,7 @@ begin
         I => clk_enclustra--sysclk
     );    
 
-------------------------------------------
--- Do not use this: we need differential 3.3 V, not available.
---    OBUFDS_inst : OBUFDS
---    generic map (
---        SLEW => "FAST") -- Specify the output slew rate
---    port map (
---        O => sysclk_50_o_p, -- Diff_p output (connect directly to top-level port)
---        OB => sysclk_50_o_n, -- Diff_n output (connect directly to top-level port)
---        I => encl_clock50 -- Buffer input
---    );
-    -- This might not work: these are just two single ended. If we remove R coupling maybe?
-    --sysclk_50_o_p <= encl_clock50;
-    --sysclk_50_o_n <= not encl_clock50;
+
 
       
 
