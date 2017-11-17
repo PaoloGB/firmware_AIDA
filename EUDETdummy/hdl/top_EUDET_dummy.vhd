@@ -23,7 +23,7 @@ use work.ipbus.ALL;
 
 entity top_EUDET_dummy is
     generic(
-    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0003"; -- Firmware revision. Remember to change this as needed.
+    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0005"; -- Firmware revision. Remember to change this as needed.
     g_NUM_DUTS  : positive := 4; -- <- was 3
     g_NUM_TRIG_INPUTS   :positive := 6;-- <- was 4
     g_NUM_EDGE_INPUTS   :positive := 6;--  <-- was 4
@@ -504,6 +504,7 @@ begin
     )
     PORT MAP (
         clk_4x_logic_i    => clk_4x_logic,
+        --clk_4x_logic_i    => sysclk_40,
         data_strobe_i     => TriggerNumberStrobe(0),
         event_data_i      => TrigNArray(0),
         ipbus_clk_i       => clk_ipb,
