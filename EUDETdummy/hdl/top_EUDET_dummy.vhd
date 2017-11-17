@@ -23,7 +23,7 @@ use work.ipbus.ALL;
 
 entity top_EUDET_dummy is
     generic(
-    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0005"; -- Firmware revision. Remember to change this as needed.
+    constant FW_VERSION : unsigned(31 downto 0):= X"ffff0006"; -- Firmware revision. Remember to change this as needed.
     g_NUM_DUTS  : positive := 4; -- <- was 3
     g_NUM_TRIG_INPUTS   :positive := 6;-- <- was 4
     g_NUM_EDGE_INPUTS   :positive := 6;--  <-- was 4
