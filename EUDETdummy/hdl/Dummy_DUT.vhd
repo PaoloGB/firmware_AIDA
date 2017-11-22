@@ -83,7 +83,7 @@ architecture RTL of Dummy_DUT is
 
   signal DUTClockCounter : unsigned(4 downto 0) := ( others => '0');
   
-  signal s_busySR : unsigned( 15 downto 0) := ( others => '0' );  -- --! Shift register to generate stretch
+  signal s_busySR : unsigned( 14 downto 0) := ( others => '0' );  -- --! Shift register to generate stretch
 
 begin
 
