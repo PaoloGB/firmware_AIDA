@@ -12,6 +12,7 @@ from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
+from I2CDISP import CFA632 #Library for display
 
 class TLU:
     """docstring for TLU"""
@@ -100,7 +101,10 @@ class TLU:
         self.IC7.setInvertReg(1, 0x00)# 0= normal, 1= inverted
         self.IC7.setIOReg(1, 0x00)# 0= output, 1= input
         self.IC7.setOutputs(1, 0xB0)# If output, set to XX
-
+        
+        #Display
+        self.DISP=CFA632(self.TLU_I2C, 0x2A) #
+        
 
 ##################################################################################################################################
 ##################################################################################################################################
