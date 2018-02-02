@@ -59,17 +59,8 @@ class MyPrompt(cmd.Cmd):
         except IOError:
             print "\t Could not retrieve CONF data."
             return
-            
+
     def do_i2c(self, args):
-	#print "Twinkle"
-	#TLU.IC7.setOutputs(1, 0x30)
-	#time.sleep(0.5)
-	#TLU.IC7.setOutputs(1, 0xB0)
-	#time.sleep(0.5)
-	#TLU.IC7.setOutputs(1, 0x30)
-	#time.sleep(0.5)
-	#TLU.IC7.setOutputs(1, 0xB0)
-	#TLU.DISP.test()
 	arglist = args.split()
         if len(arglist) == 0:
             print "\tno command specified"
