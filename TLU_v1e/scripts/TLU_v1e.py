@@ -13,6 +13,7 @@ from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
 from I2CDISP import CFA632 #Library for display
+from TLU_powermodule import PWRLED
 
 class TLU:
     """docstring for TLU"""
@@ -102,41 +103,20 @@ class TLU:
         self.IC7.setIOReg(1, 0x00)# 0= output, 1= input
         self.IC7.setOutputs(1, 0xB0)# If output, set to XX
 
-        #Display
+        #Instantiate Display
         self.DISP=CFA632(self.TLU_I2C, 0x2A) #
 
-        #Power/Led Module
+        #Instantiate Power/Led Module
         dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
-        self.zeDAC_pwr=AD5665R(self.TLU_I2C, dac_addr_module)
-        self.zeDAC_pwr.setIntRef(self.intRefOn, self.verbose)
-
-        print "BOH"
-        self.writeThreshold(self.zeDAC_pwr, -1, 0, self.verbose)
-        self.writeThreshold(self.zeDAC_pwr, -1, 1, self.verbose)
-        self.writeThreshold(self.zeDAC_pwr, -1, 2, self.verbose)
-        self.writeThreshold(self.zeDAC_pwr, -1, 3, self.verbose)
-
         exp1_addr= int(parsed_cfg.get(section_name, "I2C_EXP1Module_Addr"), 16)
-        self.ledExp1=PCA9539PW(self.TLU_I2C, exp1_addr)
-        self.ledExp1.setInvertReg(0, 0x00)# 0= normal, 1= inverted
-        self.ledExp1.setIOReg(0, 0x00)# 0= output, 1= input
-        self.ledExp1.setOutputs(0, 0x1F)# If output, set to XX
-
-        self.ledExp1.setInvertReg(1, 0x00)# 0= normal, 1= inverted
-        self.ledExp1.setIOReg(1, 0x00)# 0= output, 1= input
-        self.ledExp1.setOutputs(1, 0x1D)# If output, set to XX
-
         exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2Module_Addr"), 16)
-        self.ledExp2=PCA9539PW(self.TLU_I2C, exp1_addr)
-        self.ledExp2.setInvertReg(0, 0x00)# 0= normal, 1= inverted
-        self.ledExp2.setIOReg(0, 0x00)# 0= output, 1= input
-        self.ledExp2.setOutputs(0, 0x85)# If output, set to XX
 
-        self.ledExp2.setInvertReg(1, 0x00)# 0= normal, 1= inverted
-        self.ledExp2.setIOReg(1, 0x00)# 0= output, 1= input
-        self.ledExp2.setOutputs(1, 0x3E)# If output, set to XX
-        print "BLAH"
-        print self.ledExp2.getOutputs(1)
+        self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, exp1_addr, exp2_addr)
+        self.pwdled.setVch(0, 1, True)
+        self.pwdled.setVch(1, 0.9, True)
+        self.pwdled.setVch(2, 0.8, True)
+        self.pwdled.setVch(3, 0.1, True)
+        self.pwdled.setIndicatorRGB(2, [1, 0, 1])
 
 ##################################################################################################################################
 ##################################################################################################################################
