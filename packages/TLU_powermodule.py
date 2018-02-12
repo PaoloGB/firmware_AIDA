@@ -91,8 +91,8 @@ class PWRLED:
                 print "NOW  ", bin(nowWrd)
                 print "NEXT ", bin(nextWrd)
             nextStatus= [0xFF & nextWrd, 0xFF & (nextWrd >> 8), 0xFF & (nextWrd >> 16), 0xFF & (nextWrd >> 24) ]
-            print "  NOW", nowStatus
-            print "  NEXT ", nextStatus
+            #print "  NOW", nowStatus
+            #print "  NEXT ", nextStatus
             if nowStatus[0] != nextStatus[0]:
                 self.ledExp1.setOutputs(0, nextStatus[0])
             if nowStatus[1] != nextStatus[1]:
@@ -115,9 +115,9 @@ class PWRLED:
             if x:
                 v |= mask         # If x was True, set the bit indicated by the mask.
         return v
-        
+
     def allGreen(self):
-	#self.setIndicatorRGB(1, [0, 1, 0])
+        #self.setIndicatorRGB(1, [0, 1, 0])
         #self.setIndicatorRGB(2, [0, 1, 0])
         #self.setIndicatorRGB(3, [0, 1, 0])
         #self.setIndicatorRGB(4, [0, 1, 0])
@@ -129,37 +129,37 @@ class PWRLED:
         #self.setIndicatorRGB(10, [0, 1, 0])
         #self.setIndicatorRGB(11, [0, 1, 0])
         self.ledExp1.setOutputs(0, 218)
-	self.ledExp1.setOutputs(1, 182)
-	self.ledExp2.setOutputs(0, 109)
-	self.ledExp2.setOutputs(1, 219)
+        self.ledExp1.setOutputs(1, 182)
+        self.ledExp2.setOutputs(0, 109)
+        self.ledExp2.setOutputs(1, 219)
 
     def allRed(self):
-	self.ledExp1.setOutputs(0, 181)
-	self.ledExp1.setOutputs(1, 109)
-	self.ledExp2.setOutputs(0, 219)
-	self.ledExp2.setOutputs(1, 182)
+        self.ledExp1.setOutputs(0, 181)
+        self.ledExp1.setOutputs(1, 109)
+        self.ledExp2.setOutputs(0, 219)
+        self.ledExp2.setOutputs(1, 182)
 
     def allBlue(self):
-	self.ledExp1.setOutputs(0, 111)
-	self.ledExp1.setOutputs(1, 219)
-	self.ledExp2.setOutputs(0, 182)
-	self.ledExp2.setOutputs(1, 109)
-	
+        self.ledExp1.setOutputs(0, 111)
+        self.ledExp1.setOutputs(1, 219)
+        self.ledExp2.setOutputs(0, 182)
+        self.ledExp2.setOutputs(1, 109)
+
     def allBlack(self):
         self.ledExp1.setOutputs(0, 255)
-	self.ledExp1.setOutputs(1, 255)
-	self.ledExp2.setOutputs(0, 255)
-	self.ledExp2.setOutputs(1, 255)
-	
+        self.ledExp1.setOutputs(1, 255)
+        self.ledExp2.setOutputs(0, 255)
+        self.ledExp2.setOutputs(1, 255)
+
     def allWhite(self):
         self.ledExp1.setOutputs(0, 0)
-	self.ledExp1.setOutputs(1, 0)
-	self.ledExp2.setOutputs(0, 0)
-	self.ledExp2.setOutputs(1, 0)
-	
+        self.ledExp1.setOutputs(1, 0)
+        self.ledExp2.setOutputs(0, 0)
+        self.ledExp2.setOutputs(1, 0)
+
     def kitt(self):
-	#self.allBlack()
-	self.setIndicatorRGB(1, [1, 0, 0])
+        #self.allBlack()
+        self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
         self.setIndicatorRGB(4, [0, 0, 0])
@@ -170,7 +170,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [1, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -182,7 +182,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [1, 0, 0])
         self.setIndicatorRGB(3, [1, 0, 0])
@@ -194,7 +194,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [1, 0, 0])
@@ -206,7 +206,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -218,7 +218,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -230,7 +230,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -242,7 +242,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -254,7 +254,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -266,7 +266,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -278,7 +278,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -290,7 +290,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -302,7 +302,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
-        
+
         #mid point
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
@@ -315,7 +315,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -327,8 +327,8 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
-        
-	self.setIndicatorRGB(1, [0, 0, 0])
+
+        self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
         self.setIndicatorRGB(4, [0, 0, 0])
@@ -339,7 +339,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -351,7 +351,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -363,7 +363,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -375,7 +375,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -387,7 +387,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -399,7 +399,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -411,7 +411,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [1, 0, 0])
@@ -423,7 +423,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [0, 0, 0])
         self.setIndicatorRGB(2, [1, 0, 0])
         self.setIndicatorRGB(3, [1, 0, 0])
@@ -435,7 +435,7 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [1, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -447,7 +447,19 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
-        
+
+        self.setIndicatorRGB(1, [1, 0, 0])
+        self.setIndicatorRGB(2, [0, 0, 0])
+        self.setIndicatorRGB(3, [0, 0, 0])
+        self.setIndicatorRGB(4, [0, 0, 0])
+        self.setIndicatorRGB(5, [0, 0, 0])
+        self.setIndicatorRGB(6, [0, 0, 0])
+        self.setIndicatorRGB(7, [0, 0, 0])
+        self.setIndicatorRGB(8, [0, 0, 0])
+        self.setIndicatorRGB(9, [0, 0, 0])
+        self.setIndicatorRGB(10, [0, 0, 0])
+        self.setIndicatorRGB(11, [0, 0, 0])
+
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])

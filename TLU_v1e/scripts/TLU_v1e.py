@@ -127,21 +127,21 @@ class TLU:
         self.pwdled.setIndicatorRGB(9, [0, 0, 1])
         self.pwdled.setIndicatorRGB(10, [0, 0, 1])
         self.pwdled.setIndicatorRGB(11, [0, 0, 1])
-        
-        #self.pwdled.allGreen()
+
+        self.pwdled.allGreen()
         #time.sleep(0.5)
         #self.pwdled.allRed()
         #time.sleep(0.5)
-        #self.pwdled.allBlue()
+        self.pwdled.allBlue()
         #time.sleep(0.5)
         self.pwdled.allBlack()
-        time.sleep(0.5)
         #self.pwdled.allWhite()
-	#time.sleep(0.5)
+        #time.sleep(0.5)
+        #self.pwdled.kitt()
+        #self.pwdled.kitt()
+        #self.pwdled.kitt()
         self.pwdled.kitt()
-        self.pwdled.kitt()
-        self.pwdled.kitt()
-        self.pwdled.kitt()
+        self.pwdled.allBlack()
 
 ##################################################################################################################################
 ##################################################################################################################################
