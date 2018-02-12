@@ -138,8 +138,6 @@ class TLU:
         #self.pwdled.allWhite()
         #time.sleep(0.5)
         #self.pwdled.kitt()
-        #self.pwdled.kitt()
-        #self.pwdled.kitt()
         self.pwdled.kitt()
         self.pwdled.allBlack()
 
