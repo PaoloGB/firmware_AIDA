@@ -32,14 +32,14 @@
   <node id="i2c_cmdstatus" address="0x4" mask="0x000000ff" permission="rw" description="" />
 </node>
 <!-- Not sure about the FillLevelFlags register -->
-<!--
+
 <node id="eventBuffer" address="0x4000" description="Event buffer">
   <node id="EventFifoData" address="0x0" mode="non-incremental" size="32000" permission="r" description="" />
   <node id="EventFifoFillLevel" address="0x1" permission="r" description="" />
   <node id="EventFifoCSR" address="0x2" permission="rw" description="" />
   <node id="EventFifoFillLevelFlags" address="0x3" permission="r" description="" />
 </node>
--->
+
 <!-- Event formatter registers. Should be ok -->
 <!--
 <node id="Event_Formatter"      address="0x5000" description="Event formatter configuration">

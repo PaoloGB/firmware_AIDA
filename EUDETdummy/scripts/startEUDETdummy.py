@@ -66,6 +66,12 @@ if __name__ == "__main__":
     logdata= True
     EUDummy.start(logdata)
     time.sleep(0.2)
+    nwords= int( EUDummy.getFifoLevel() )
+    print nwords
+    myarray= EUDummy.getFifoData(nwords)
+    for iel in myarray:
+      print iel >> 16
+    
     EUDummy.stop()
     # prompt = MyPrompt()
     # prompt.prompt = '>> '
