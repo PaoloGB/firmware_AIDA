@@ -7,6 +7,7 @@
 /TLU_v1e/scripts/datafiles
 /Data/*
 /TLU_v1e/.Xil/
+Simulation/
 *.pyc
 .svn/*
 *.jou
