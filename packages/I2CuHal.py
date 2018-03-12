@@ -77,8 +77,8 @@ class I2CCore:
         self.target.dispatch()
         #Write pre-scale register
         #prescale = int(self.wishboneclock / (5.0 * self.i2cclock)) - 1
+        #prescale = int(self.wishboneclock / (5.0 * self.i2cclock)) 
         prescale = 0x0100 #FOR NOW HARDWIRED, TO BE MODIFIED
-        #prescale = 0x2710 #FOR NOW HARDWIRED, TO BE MODIFIED
         self.prescale_low.write(prescale & 0xff)
         self.prescale_high.write((prescale & 0xff00) >> 8)
         #Enable core

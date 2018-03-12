@@ -131,31 +131,31 @@ print result
 IC6=PCA9539PW(master_I2C, 0x74)
 #BANK 0
 IC6.setInvertReg(0, 0x00)# 0= normal
-IC6.setIOReg(0, 0xFF)# 0= output <<<<<<<<<<<<<<<<<<<
-IC6.setOutputs(0, 0xFF)
+IC6.setIOReg(0, 0x00)# 0= output <<<<<<<<<<<<<<<<<<<
+IC6.setOutputs(0, 0x77)
 res= IC6.getInputs(0)
 print "IC6 read back bank 0: 0x%X" % res[0]
 #
 #BANK 1
 IC6.setInvertReg(1, 0x00)# 0= normal
-IC6.setIOReg(1, 0xFF)# 0= output <<<<<<<<<<<<<<<<<<<
-IC6.setOutputs(1, 0xFF)
+IC6.setIOReg(1, 0x00)# 0= output <<<<<<<<<<<<<<<<<<<
+IC6.setOutputs(1, 0x77)
 res= IC6.getInputs(1)
 print "IC6 read back bank 1: 0x%X" % res[0]
 
 # # #
 IC7=PCA9539PW(master_I2C, 0x75)
 #BANK 0
-IC7.setInvertReg(0, 0xFF)# 0= normal
-IC7.setIOReg(0, 0xFA)# 0= output <<<<<<<<<<<<<<<<<<<
-IC7.setOutputs(0, 0xFF)
+IC7.setInvertReg(0, 0x00)# 0= normal
+IC7.setIOReg(0, 0x00)# 0= output <<<<<<<<<<<<<<<<<<<
+IC7.setOutputs(0, 0x00)
 res= IC7.getInputs(0)
 print "IC7 read back bank 0: 0x%X" % res[0]
 #
 #BANK 1
 IC7.setInvertReg(1, 0x00)# 0= normal
-IC7.setIOReg(1, 0x4F)# 0= output <<<<<<<<<<<<<<<<<<<
-IC7.setOutputs(1, 0xFF)
+IC7.setIOReg(1, 0x00)# 0= output <<<<<<<<<<<<<<<<<<<
+IC7.setOutputs(1, 0xB0)
 res= IC7.getInputs(1)
 print "IC7 read back bank 1: 0x%X" % res[0]
 # #I2C EXPANDER CONFIGURATION END

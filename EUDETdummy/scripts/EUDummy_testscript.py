@@ -68,7 +68,7 @@ zeClock.checkDesignID()
 #zeClock.setPage(0, True)
 #zeClock.getPage(True)
 clkRegList= zeClock.parse_clk("./../../bitFiles/TLU_CLK_Config.txt")
-#zeClock.writeConfiguration(clkRegList)######
+zeClock.writeConfiguration(clkRegList)######
 zeClock.writeRegister(0x0536, [0x0B]) #Configures manual switch of inputs
 zeClock.writeRegister(0x0949, [0x0F]) #Enable all inputs
 zeClock.writeRegister(0x052A, [0x05]) #Configures source of input
