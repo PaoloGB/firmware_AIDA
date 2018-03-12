@@ -42,6 +42,7 @@
 
 ## WinEdt project
 *.prj.bak
+*.prj
 
 ## Intermediate documents:
 *.dvi
