@@ -46,11 +46,11 @@ class EUDETdummy:
         self.IC6=PCA9539PW(self.TLU_I2C, 0x74)
         self.IC6.setInvertReg(0, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(0, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(0, 0xAA)# If output, set to XX
+        self.IC6.setOutputs(0, 0x88)# If output, set to XX
 
         self.IC6.setInvertReg(1, 0x00)# 0= normal, 1= inverted
         self.IC6.setIOReg(1, 0x00)# 0= output, 1= input
-        self.IC6.setOutputs(1, 0xAA)# If output, set to XX
+        self.IC6.setOutputs(1, 0x88)# If output, set to XX
 
         self.IC7=PCA9539PW(self.TLU_I2C, 0x75)
         self.IC7.setInvertReg(0, 0x00)# 0= normal, 1= inverted

@@ -12,6 +12,9 @@ from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
+from I2CDISP import CFA632 #Library for display
+from I2CDISP import LCD09052 #Library for display
+from TLU_powermodule import PWRLED
 
 class TLU:
     """docstring for TLU"""
@@ -101,6 +104,44 @@ class TLU:
         self.IC7.setIOReg(1, 0x00)# 0= output, 1= input
         self.IC7.setOutputs(1, 0xB0)# If output, set to XX
 
+        #Instantiate Display
+        #self.DISP=CFA632(self.TLU_I2C, 0x2A) #
+        self.DISP=LCD09052(self.TLU_I2C, 0x3A) #
+
+        #Instantiate Power/Led Module
+        dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
+        exp1_addr= int(parsed_cfg.get(section_name, "I2C_EXP1Module_Addr"), 16)
+        exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2Module_Addr"), 16)
+
+        self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, exp1_addr, exp2_addr)
+        self.pwdled.setVch(0, 1, True)
+        self.pwdled.setVch(1, 0.9, True)
+        self.pwdled.setVch(2, 0.8, True)
+        self.pwdled.setVch(3, 0.1, True)
+        self.pwdled.setIndicatorRGB(1, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(2, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(3, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(4, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(5, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(6, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(7, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(8, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(9, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(10, [0, 0, 1])
+        self.pwdled.setIndicatorRGB(11, [0, 0, 1])
+
+        self.pwdled.allGreen()
+        #time.sleep(0.5)
+        #self.pwdled.allRed()
+        #time.sleep(0.5)
+        self.pwdled.allBlue()
+        #time.sleep(0.5)
+        self.pwdled.allBlack()
+        #self.pwdled.allWhite()
+        #time.sleep(0.5)
+        #self.pwdled.kitt()
+        self.pwdled.kitt()
+        self.pwdled.allBlack()
 
 ##################################################################################################################################
 ##################################################################################################################################

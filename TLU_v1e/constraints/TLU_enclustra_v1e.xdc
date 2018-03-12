@@ -105,5 +105,18 @@ set_property PACKAGE_PIN G3 [get_ports {dut_clk_i[3]}]
 set_input_delay -clock [get_clocks [get_clocks -of_objects [get_pins I4/pll_base_inst/CLKOUT0]]] -rise -min 0.300 [get_ports -regexp -filter { NAME =~  ".*thresh.*" && DIRECTION == "IN" }]
 set_input_delay -clock [get_clocks [get_clocks -of_objects [get_pins I4/pll_base_inst/CLKOUT0]]] -rise -max 0.400 [get_ports -regexp -filter { NAME =~  ".*thresh.*" && DIRECTION == "IN" }]
 
+# Input timing ignored
+create_clock -name virtualclk -period 10.000 -waveform {0.000 5.00}
+set_clock_groups -name async_clk -asynchronous -group [get_clocks -include_generated_clocks s_clk320] -group {virtualclk}
+set input_list "[get_ports {threshold_discr_n_i[*]}] [get_ports {threshold_discr_p_i[*]}]"
+set_input_delay -clock virtualclk -rise -2 $input_list
+set_input_delay -clock virtualclk -fall 2 $input_list
+set_input_delay -clock virtualclk -rise -2 $input_list -clock_fall -add_delay
+set_input_delay -clock virtualclk -fall 2 $input_list -clock_fall -add_delay
+
+
+#set_input_delay 1.6ns -clock [get_clocks s_clk320][get_ports threshold_discr_p_i[2]]
+#set_false_path -from [get_ports threshold_discr_p_i[2]] -to [get_pins I5/trigger_input_loop[2]/thresholdDeserializer/ISERDES2_Delayed/DDLY]
+
 
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
