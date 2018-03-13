@@ -60,6 +60,10 @@ Not all parameters are needed; if one of the parameters is not present in the fi
   \item[HDMI3\_clk] \verb|[unsigned int, 1]| Defines the driving signal on the corresponding \gls{hdmi} connector.
   \item[HDMI4\_clk] \verb|[unsigned int, 1]| Defines the driving signal on the corresponding \gls{hdmi} connector.
   \item[LEMOclk] \verb|[boolean, true]| Defines whether a driving clock is to be provided on the differential LEMO connector of the \gls{tlu}. By default (value= 1), the clock is driven from the clock chip. If the value is set to 0 no clock will be driven.
+  \item[PMT1\_V] \verb|[float, 0.0]| Defines the control voltage for PMT 1, in volts. The value can range from 0 to 1 V.
+  \item[PMT2\_V] \verb|[float, 0.0]| Defines the control voltage for PMT 2, in volts. The value can range from 0 to 1 V.
+  \item[PMT3\_V] \verb|[float, 0.0]| Defines the control voltage for PMT 3, in volts. The value can range from 0 to 1 V.
+  \item[PMT4\_V] \verb|[float, 0.0]| Defines the control voltage for PMT 4, in volts. The value can range from 0 to 1 V.
   \item[in0\_STR] \verb|[unsigned int, 0]| Defines the number of clock cycles used to stretch a pulse once a trigger is detected by the discriminator on input 0. This feature allows the user to modify the pulses that are then fed into the trigger logic within the \gls{tlu}.
       A minimum lenght of 6.25~ns is provided if the value is 0. Any extra clock cycle extend the pulse by 6.25~ns (160~MHz clock). An example of the effect on the stretch setting is shown in figure~\ref{Fig:exampleExtendedTriggers}.
   \item[in0\_DEL] \verb|[unsigned int, 0]| Defines the delay, in 160~MHz clock cycles, to be assigned to the discriminated pulse from input 0, in order to process the logic for the trigger. This can be used to compensate for differences in cable lengths for the signals used to create a trigger.
