@@ -14,6 +14,7 @@ from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
 from I2CDISP import CFA632 #Library for display
 from TLU_powermodule import PWRLED
+from ATSHA204A import ATSHA204A
 
 class TLU:
     """docstring for TLU"""
@@ -57,7 +58,13 @@ class TLU:
 
         enableCore= True #Only need to run this once, after power-up
         self.enableCore()
-        self.eepromAX3read()
+        ####### EEPROM AX3 testing
+        self.ax3eeprom= ATSHA204A(self.TLU_I2C, 0x64)
+        print "shiftR\tdatBit\tcrcBit\tcrcReg \n", self.ax3eeprom._CalculateCrc([255, 12, 54, 28, 134, 89], 3)
+        self.ax3eeprom._wake(True, True)
+        print self.ax3eeprom._GetCommandPacketSize(8)
+        #self.eepromAX3read()
+        ####### EEPROM AX3 testing end
 
         # Instantiate clock chip and configure it (if necessary)
         #self.zeClock=si5345(self.TLU_I2C, 0x68)
