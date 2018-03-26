@@ -87,7 +87,7 @@ class si5345:
         self.i2c.write( self.slaveaddr, myaddr, mystop)
         #time.sleep(0.1)
         res= self.i2c.read( self.slaveaddr, nwords)
-        print "  Si5345 EPROM: "
+        print "  Si5345 EEPROM: "
         result="\t"
         for iaddr in reversed(res):
             result+="%#02x "%(iaddr)
@@ -119,7 +119,7 @@ class si5345:
             print "\t  ", len(regSettingList), "elements"
         return regSettingList
 
-    def writeConfiguration(self, regSettingList):
+    def writeConfiguration(self, regSettingList, verbose= 0):
         print "  Si5345 Writing configuration:"
         #regSettingList= list(regSettingCsv)
         counter=0
@@ -127,9 +127,11 @@ class si5345:
             regAddr= int(item[0], 16)
             regData=[0]
             regData[0]= int(item[1], 16)
-            print "\t", counter, "Reg:", hex(regAddr), "Data:", regData
+            if verbose:
+                print "\t", counter, "Reg:", hex(regAddr), "Data:", regData
             counter += 1
             self.writeRegister(regAddr, regData, False)
+        print "\tSi5345 configuration done"
 
     def checkDesignID(self):
         regAddr= 0x026B
