@@ -3,6 +3,7 @@ import uhal
 from I2CuHal import I2CCore
 import StringIO
 import csv
+import sys
 
 class si5345:
     #Class to configure the Si5344 clock generator
@@ -121,16 +122,25 @@ class si5345:
 
     def writeConfiguration(self, regSettingList, verbose= 0):
         print "  Si5345 Writing configuration:"
+        toolbar_width = 38
+        if (verbose==1):
+            sys.stdout.write("  [%s]" % (" " * toolbar_width))
+            sys.stdout.flush()
+            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
         #regSettingList= list(regSettingCsv)
         counter=0
         for item in regSettingList:
             regAddr= int(item[0], 16)
             regData=[0]
             regData[0]= int(item[1], 16)
-            if verbose:
+            if (verbose > 1):
                 print "\t", counter, "Reg:", hex(regAddr), "Data:", regData
             counter += 1
             self.writeRegister(regAddr, regData, False)
+            if (not(counter % 10) and (verbose==1)):
+                sys.stdout.write("-")
+                sys.stdout.flush()
+        sys.stdout.write("\n")
         print "\tSi5345 configuration done"
 
     def checkDesignID(self):
