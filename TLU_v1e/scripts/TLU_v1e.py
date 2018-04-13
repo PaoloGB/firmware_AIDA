@@ -74,7 +74,7 @@ class TLU:
         if (int(parsed_cfg.get(section_name, "CONFCLOCK"), 16)):
             #clkRegList= self.zeClock.parse_clk("./../../bitFiles/TLU_CLK_Config_v1e.txt")
             clkRegList= self.zeClock.parse_clk(parsed_cfg.get(section_name, "CLOCK_CFG_FILE"))
-            self.zeClock.writeConfiguration(clkRegList)######
+            self.zeClock.writeConfiguration(clkRegList, self.verbose)######
 
         self.zeClock.checkDesignID()
 
