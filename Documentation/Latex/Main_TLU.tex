@@ -86,7 +86,9 @@
     \end{tikzpicture}
 }
 
-
+\newdateformat{monthyeardate}{%
+  \monthname[\THEMONTH], \THEYEAR}
+  
 %\usepackage{mathpazo}
 %\usepackage[protrusion=true,expansion=true]{microtype}
 %\usepackage{type1cm}
@@ -122,7 +124,7 @@
   }
 \makeatother
 \author{Paolo Baesso}
-\title{AIDA Trigger logic unit (TLU)}
+\title{AIDA Trigger logic unit (TLU v1E)}
 \date{\today}
 \loadglsentries{O:/LatexFiles/Glossary/myGlossary.tex}
 %\input{O:/LatexFiles/Glossary/myGlossary.tex}

@@ -43,13 +43,14 @@ Not all parameters are needed; if one of the parameters is not present in the fi
   \item[verbose] \verb|[int, 0]| Defines the level of output messages from the \gls{tlu}. 0 indicates minimum output.
   \item[skipconf] \verb|[int, 0]| When this flag is set, EUDAQ will skip the whole configuration phase for the \gls{tlu}. When the user configures the hardware in EUDAQ, the board will remain in its current state and no configuration parameter will be written. This can be useful to avoid disturbing other pieces of electronics.
   \item[HDMI1\_set] \verb|[unsigned int, 0b0001]| Defines the source of the signal on the pins for the \verb|HDMI1| connector. A 1 indicates that each pin pair is an driven by the \gls{tlu}, a 0 that they are left floating (with respect to the \gls{tlu}). This can be used to define the signal direction on each pin pair. The order of the pairs is as follow:\\
-  bit 0= CONT, bit 1= SPARE, bit 2= TRIG, trig 3= BUSY. Note that the direction of the DUTClk pair is defined in a separate parameter.\\
+  bit 0= CONT, bit 1= SPARE, bit 2= TRIG, bit 3= BUSY.\\
+  Note that the direction of the DUTClk pair is defined in a separate parameter (see HDMI\_clk).\\
   Example to configure the connector to work with an EUDET device:\\
   - in this configuration the BUSY line is driven by the device under test, so it is an input for the \gls{tlu} and should not be driven by it (bit 3= 0)\\
   - TRIGGER line is an output for the \gls{tlu} so is driven by it (bit 2= 1)\\
   - SPARE line is used to provide control signals, such as the reset signal to initialize the devices at the start of a run (\texttt{T$_0$}). It should be configured as driven by the \gls{tlu} (bit 1= 1)\\
   - CONT is used by the \gls{tlu} to issue control commands and should be configured as a signal driven by the \gls{tlu} (bit 0= 1).\\
-  Therefore the value of this parameter would be 0x7 (b1110).
+  Therefore the value of this parameter would be 0x7 (b0111).
   \item[HDMI2\_set] \verb|[unsigned int, 0b0001]| Defines the direction of the pins for the \verb|HDMI2| connector.
   \item[HDMI3\_set] \verb|[unsigned int, 0b0001]| Defines the direction of the pins for the \verb|HDMI3| connector.
   \item[HDMI4\_set] \verb|[unsigned int, 0b0001]| Defines the direction of the pins for the \verb|HDMI4| connector.
