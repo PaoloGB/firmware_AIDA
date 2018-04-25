@@ -6,7 +6,7 @@ Board \brd is an evolution of the miniTLU designed at the \gls{uob}. The board s
 The board must be plugged onto a \gls{fmc} carrier board with an \gls{fpga} in order to function correctly. The connection is achieved using a low pin count \gls{fmc} connector. The list of the pins used and the corresponding signal within the \gls{fpga} are provided in appendix at page~\pageref{ch:appendix}.\\
 
 \subsubsection{Device under test}\label{ch:dut}
-The \gls{dut}s are connected to the \gls{tlu} using standard size \gls{hdmi} connectors\footnote{In the miniTLU hardware there were mini\gls{hdmi} connectors.}.\\
+The \gls{dut}s are connected to the \gls{tlu} using standard size \gls{hdmi} connectors\footnote{In the miniTLU hardware these were mini \gls{hdmi} connectors.}.\\
 In the current version of the hardware, up to four \gls{dut}s can be connected to the board. In this document the connectors will be referred to as \verb|HDMI1|, \verb|HDMI2|, \verb|HDMI3| and \verb|HDMI4|.\\
 The connectors expect 3.3~V \gls{lvds} signals and are bi-directional, i.e. any differential pair can be configured to be an output (signal from the TLU to the DUT) or an input (signals from the DUT to the TLU) by using half-duplex line transceivers. Figure~\ref{fig:LVDSTransceiver} illustrates how the differential pairs are connected to the transceivers.
 \begin{alertinfo}{Note}
@@ -129,9 +129,19 @@ The \gls{cdr} is used in conjunction with the \gls{sfp} cage to recover data and
 The clock for \brd can be generated using various external or internal references (see section~\ref{ch:clock} for further details). In order to reduce any jitter from the clock source and to provide a stable clock, the board hosts a Si5345 clock generator that needs to be configured via \gls{i2c} interface.\\
 The configuration involves writing $\thicksim$380 register values. A configuration file, containing all the register addresses and the corresponding values, can be generated using the ClockBuilder tool available from \href{http://www.enclustra.com/en/home/}{Silicon Labs}.\\
 The registers addresses between 0x026B and 0x0272 contain user-defined values that can be used to identify the configuration version: it is advisable to check those registers and check that they contain the correct code to ensure that the chip is configured according to the \gls{tlu} specifications. As an indication, files generated for the current version of the \gls{tlu} should have a configuration identifier in the form \verb|TLU1E_XX|, where \verb|XX| is a sequential number.\\
-\begin{alertinfo}{TLU Producer}
-    When using the TLU producer to configure hardware, the location of the configuration file can be specified by setting the \texttt{CLOCK\_CFG\_FILE} value in the \emph{conf} file for the producer.\\
+\begin{alertinfo}{\gls{tlu} Producer}
+    When using the \gls{tlu} producer to configure hardware, the location of the configuration file can be specified by setting the \texttt{CLOCK\_CFG\_FILE} value in the \emph{conf} file for the producer.\\
     If no value is specified, the software will look for the configuration file \texttt{../conf/confClk.txt} i.e. if the \texttt{euRun} binary file is located in \texttt{./eudaq/bin}, then the default configuration file should reside in \texttt{./eudaq/conf}. The configuration will produce an error if the file is not found.
 \end{alertinfo}
 
-\section{Power module and \gls{led}}\label{ch:frontpanel}
+\section{Power module and led}\label{ch:frontpanel}
+The \gls{led}s and \gls{pmt} connectors on the front panel are part of an auxiliary board installed together with the \brd. All the functionalities on the board, such as the indicators and the \gls{dac} are controlled via \gls{i2c} bus.\\
+Is the \gls{tlu} is controlled using EUDAQ, the \gls{dac} can be steered by means of a parameter in the configuration file (see section~\ref{ch:EUDAQPar} for details).\\
+Three green \gls{led} on the front panel are used to indicate the presence of power (+12 V) and the correct functioning of the +5 V and -5 V voltage regulators. Further indicators are assigned to the \gls{hdmi} and trigger inputs to provide information on their status. These indicators are \gls{rgb}. At the moment there is not defined scheme to assign a meaning to each colour.\\
+The LEMO connectors used to power the \gls{pmt}s are wired according to the following scheme, inherited from what already in use in beam telescopes (FIX THIS):
+\begin{enumerate}
+  \item Vcc
+  \item Vcc
+  \item Vcc
+  \item Vcc
+\end{enumerate}
