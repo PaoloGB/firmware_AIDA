@@ -1,7 +1,16 @@
-\chapter{EUDAQ Producer}\label{ch:eudaqprod}
+\chapter{Control software}\label{ch:controlsw}
+The preferred method to run the \gls{tlu} is by using the \href{https://github.com/eudaq/eudaq}{EUDAQ}\footnote{https://github.com/eudaq/eudaq} data acquisition framework.\\
+A \gls{tlu} producer, based on C++, has been written to integrate the hardware in EUDAQ and is regularly pushed to the master repository. Checking out the latest EUDAQ software ensures to also have a stable version of the producer.\\
+In addition to the EUDAQ producer, a set of Python scripts has been developed to enable users to configure and run the \gls{tlu} using a minimal environment without having to setup the whole data acquisition framework. The scripts are meant to reflect all the functionalities in the EUDAQ producers, i.e. using the scripts it should be possible to perform any operation available on the EUDAQ producer. However, they should only be used for local debugging and testing.\\
+\begin{alertinfo}{Warning}
+    When fixing bus or developing new software for the \gls{tlu}, priority will be given to ensure that the EUDAQ producer is patched first. As a consequence, there is a higher chance to find bugs in the Python scripts. 
+\end{alertinfo}
+
+
+\section{EUDAQ Producer}\label{ch:eudaqprod}
 Current structure of a fmctlu producer event:
 \lstset{language=XML}
-\scriptsize 
+\scriptsize
 \begin{lstlisting}
 <Event>
   <Type>2149999981</Type>
@@ -60,3 +69,9 @@ Current structure of a fmctlu producer event:
   \item[???] Event type from \gls{tlu} is missing?
   \item[???] Input trig, i.e. the actual firing inputs should be in TRIGGER but there seems to be nothing there
 \end{description}
+
+\section{Python scripts}
+The scripts used to debug work locally with the \gls{tlu} are located in a dedicated folder in the \href{https://github.com/PaoloGB/firmware_AIDA/tree/master/TLU_v1e/scripts}{firmware repository}\footnote{https://github.com/PaoloGB/firmware\_AIDA/tree/master/TLU\_v1e/scripts} and rely on additional packages and software.
+First of all, the user should download the \href{https://github.com/PaoloGB/firmware_AIDA/tree/master/packages}{packages} used to control the various components of the hardware\footnote{https://github.com/PaoloGB/firmware\_AIDA/tree/master/packages}. It is also necessary to have a local installation of \href{https://ipbus.web.cern.ch/ipbus/doc/user/html/index.html}{IPBUS and uHAL}\footnote{https://ipbus.web.cern.ch/ipbus/doc/user/html/index.html}.\\
+Once all the necessary packages have been installed and the environment is set to point to the right folders, it is possible to run the \verb|startTLU_v1e.py| script to start an interface that allows to operate the \gls{tlu}.
+ 
