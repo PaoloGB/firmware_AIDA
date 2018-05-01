@@ -13,8 +13,8 @@ from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
 from I2CDISP import CFA632 #Library for display
-from I2CDISP import LCD09052 #Library for display
 from TLU_powermodule import PWRLED
+from ATSHA204A import ATSHA204A
 
 class TLU:
     """docstring for TLU"""
@@ -58,6 +58,13 @@ class TLU:
 
         enableCore= True #Only need to run this once, after power-up
         self.enableCore()
+        ####### EEPROM AX3 testing
+        self.ax3eeprom= ATSHA204A(self.TLU_I2C, 0x64)
+        print "shiftR\tdatBit\tcrcBit\tcrcReg \n", self.ax3eeprom._CalculateCrc([255, 12, 54, 28, 134, 89], 3)
+        self.ax3eeprom._wake(True, True)
+        print self.ax3eeprom._GetCommandPacketSize(8)
+        #self.eepromAX3read()
+        ####### EEPROM AX3 testing end
 
         # Instantiate clock chip and configure it (if necessary)
         #self.zeClock=si5345(self.TLU_I2C, 0x68)
@@ -105,8 +112,7 @@ class TLU:
         self.IC7.setOutputs(1, 0xB0)# If output, set to XX
 
         #Instantiate Display
-        #self.DISP=CFA632(self.TLU_I2C, 0x2A) #
-        self.DISP=LCD09052(self.TLU_I2C, 0x3A) #
+        self.DISP=CFA632(self.TLU_I2C, 0x2A) #
 
         #Instantiate Power/Led Module
         dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
@@ -118,30 +124,25 @@ class TLU:
         self.pwdled.setVch(1, 0.9, True)
         self.pwdled.setVch(2, 0.8, True)
         self.pwdled.setVch(3, 0.1, True)
-        self.pwdled.setIndicatorRGB(1, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(2, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(3, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(4, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(5, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(6, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(7, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(8, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(9, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(10, [0, 0, 1])
-        self.pwdled.setIndicatorRGB(11, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(1, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(2, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(3, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(4, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(5, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(6, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(7, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(8, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(9, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(10, [0, 0, 1])
+        #self.pwdled.setIndicatorRGB(11, [0, 0, 1])
 
         self.pwdled.allGreen()
-        #time.sleep(0.5)
-        #self.pwdled.allRed()
-        #time.sleep(0.5)
         self.pwdled.allBlue()
-        #time.sleep(0.5)
         self.pwdled.allBlack()
-        #self.pwdled.allWhite()
-        #time.sleep(0.5)
         #self.pwdled.kitt()
-        self.pwdled.kitt()
         self.pwdled.allBlack()
+
+
 
 ##################################################################################################################################
 ##################################################################################################################################
@@ -234,6 +235,23 @@ class TLU:
             print "\tOldStatus= ", "{0:#0{1}x}".format(oldStatus,4), "Mask=" , hex(mask), "newStatus=", "{0:#0{1}x}".format(newStatus,4)
         self.IC7.setOutputs(bank, newStatus)
         return newStatus
+
+    def eepromAX3read(self):
+        mystop=True
+        print "  Reading AX3 eeprom (not working 100% yet):"
+        myslave= 0x64
+        self.TLU_I2C.write(myslave, [0x02, 0x00])
+        nwords= 5
+        res= self.TLU_I2C.read( myslave, nwords)
+        print "\tAX3 awake: ", res
+        mystop=True
+        nwords= 7
+        #mycmd= [0x03, 0x07, 0x02, 0x00, 0x00, 0x00, 0x1e, 0x2d]#conf 0?
+        mycmd= [0x03, 0x07, 0x02, 0x00, 0x01, 0x00, 0x17, 0xad]#conf 1 <<< seems to reply with correct error code (0)
+        #mycmd= [0x03, 0x07, 0x02, 0x02, 0x00, 0x00, 0x1d, 0xa8]#data 0?
+        self.TLU_I2C.write(myslave, mycmd, mystop)
+        res= self.TLU_I2C.read( myslave, nwords)
+        print "\tAX3 EEPROM: ", res
 
     def enableClkLEMO(self, enable= False, verbose= False):
         ## Enable or disable the output clock to the differential LEMO output
