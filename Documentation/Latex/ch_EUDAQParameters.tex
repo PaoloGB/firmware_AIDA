@@ -27,9 +27,13 @@ Not all parameters are needed; if one of the parameters is not present in the fi
   \item[I2C\_CLK\_Addr] \verb|[positive int, 0x68]| \gls{i2c} address of Si5345 clock generator installed on the \gls{tlu}.
   \item[I2C\_DAC1\_Addr] \verb|[positive int, 0x13]| \gls{i2c} address of \gls{dac} installed on the \gls{tlu}. The \gls{dac} is used to configure the threshold of the trigger inputs.
   \item[I2C\_DAC2\_Addr] \verb|[positive int, 0x1F]| \gls{i2c} address of \gls{dac} installed on the \gls{tlu}. The \gls{dac} is used to configure the threshold of the trigger inputs.
-  \item[I2C\_ID\_Addr] \verb|[positive int, 0x50]| \gls{i2c} address the unique ID \gls{eeprom} installed on the \gls{tlu}. The chip is used to provide a unique identifier to each kit.
-  \item[I2C\_EXP1\_Addr] \verb|[positive int, 0x74]| \gls{i2c} address the bus expander used to select the direction of the \gls{hdmi} pins on the board.
-  \item[I2C\_EXP2\_Addr] \verb|[positive int, 0x75]| \gls{i2c} address the bus expander used to select the direction of the \gls{hdmi} pins on the board.
+  \item[I2C\_ID\_Addr] \verb|[positive int, 0x50]| \gls{i2c} address of the unique ID \gls{eeprom} installed on the \gls{tlu}. The chip is used to provide a unique identifier to each kit.
+  \item[I2C\_EXP1\_Addr] \verb|[positive int, 0x74]| \gls{i2c} address of the bus expander used to select the direction of the \gls{hdmi} pins on the board.
+  \item[I2C\_EXP2\_Addr] \verb|[positive int, 0x75]| \gls{i2c} address of the bus expander used to select the direction of the \gls{hdmi} pins on the board.
+  \item[I2C\_DACModule\_Addr] \verb|[positive int, 0x1C]| \gls{i2c} address of the \gls{dac} installed on the power module and used to control the \gls{pmt} outputs.
+  \item[PMT\_vCtrlMax] \verb|[float, 1]| value, in volts, of the maximum control voltage for the \gls{pmt}s. For EUDET telescopes this should normally be left to 1~V. If the \gls{tlu} is going to be used with different \gls{pmt}s, then a new value can be used but the hardware must be tweaked accordingly by changing the voltagi divider on the power module.
+  \item[I2C\_EXP1Module\_Addr] \verb|[positive int, 0x76]| \gls{i2c} address of the first expander used to control the indicators on the power module.
+  \item[I2C\_EXP2Module\_Addr] \verb|[positive int, 0x77]| \gls{i2c} address of the second expander used to control the indicators on the power module.
   \item[intRefOn] \verb|[boolean, false]| If true, the \gls{dac}s installed on the \gls{tlu} will use their internal voltage reference rather than the one provide externally.
   \item[VRefInt] \verb|[float, 2.5]| Value in volts for the internal reference voltage of the \gls{dac}s. The voltage is chosen by the chip manufacturer. This is only used if \verb|intRefOn= true|.
   \item[VRefExt] \verb|[float, 1.3]| Value in volts for the external reference voltage of the \gls{dac}s. The voltage is determined by a circuit on the \gls{tlu} and the value of this parameter must reflect such voltage. This is only used if \verb|intRefOn= false|.
