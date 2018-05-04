@@ -118,7 +118,7 @@ class TLU:
         dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
         exp1_addr= int(parsed_cfg.get(section_name, "I2C_EXP1Module_Addr"), 16)
         exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2Module_Addr"), 16)
-        pmtCtrVMax= parsed_cfg.getfloat(section_name, "vCtrlMax")
+        pmtCtrVMax= parsed_cfg.getfloat(section_name, "PMT_vCtrlMax")
 
         self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, pmtCtrVMax, exp1_addr, exp2_addr)
         
