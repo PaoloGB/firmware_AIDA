@@ -848,7 +848,6 @@ class TLU:
         self.setInternalTrg(cmd)
         
         # # Set the control voltages for the PMTs
-        print ">>>>>>>>>>>>>"
         PMT1_V= parsed_cfg.getfloat(section_name, "PMT1_V")
         PMT2_V= parsed_cfg.getfloat(section_name, "PMT2_V")
         PMT3_V= parsed_cfg.getfloat(section_name, "PMT3_V")
