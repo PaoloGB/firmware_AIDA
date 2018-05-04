@@ -8,13 +8,14 @@ from PCA9539PW import PCA9539PW # Library for serial line expander
 class PWRLED:
     #Class to configure the EEPROM
 
-    def __init__(self, i2ccore, DACaddr=0x1C, Exp1Add= 0x76, Exp2Add= 0x77):
+    def __init__(self, i2ccore, DACaddr=0x1C, PMTmaxV= 1, Exp1Add= 0x76, Exp2Add= 0x77):
         print "  TLU POWERMODULE Initializing..."
         self.TLU_I2C = i2ccore
         self.pwraddr = DACaddr
         self.exp1addr= Exp1Add
         self.exp2addr= Exp2Add
         self.intRefOn= 0
+        self.vCtrlMax= PMTmaxV
         self.verbose= True
         #Map indicator color based on their position on the expanders: 0-15 are on expander 2, 16 to 31 on expander 1. One indicator is missing the blue component, hence
         #the "-1" value.
@@ -51,16 +52,20 @@ class PWRLED:
     def setVch(self, channel, voltage, verbose=False):
         # Note: the channel here is the DAC channel.
         # The mapping with the power module is not one-to-one
+        if (verbose):
+            print "  PWRModule: CONFIGURING VOLTAGE FOR PMT", channel+1
+            print "\tVcontrol=", voltage
         if ((channel < 0) | (3 < channel )):
-            print "PWRModule: channel should be comprised between 0 and 3"
+            print "\tPWRModule: channel should be comprised between 0 and 3"
         else:
             if (voltage < 0):
-                print "PWRModule: voltage must be comprised between 0 and 1 V. Coherced to 0 V."
+                print "\tPWRModule: voltage cannot be negative. Coherced to 0 V."
                 voltage = 0
-            if (voltage > 1):
-                print "PWRModule: voltage must be comprised between 0 and 1 V. Coherced to 1 V."
-                voltage = 1
-            dacValue= voltage*65535
+            if (voltage > self.vCtrlMax):
+                print "\tPWRModule: voltage cannot exceed vCtrlMax. Coherced to vCtrlMax."
+                print "\tPWRModule: vCtrlMax=", self.vCtrlMax, "V. See config file to change this value."
+                voltage = self.vCtrlMax
+            dacValue= voltage*65535/self.vCtrlMax
             self.zeDAC_pwr.writeDAC(int(dacValue), channel, verbose)
         return
 

@@ -118,12 +118,10 @@ class TLU:
         dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
         exp1_addr= int(parsed_cfg.get(section_name, "I2C_EXP1Module_Addr"), 16)
         exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2Module_Addr"), 16)
+        pmtCtrVMax= parsed_cfg.getfloat(section_name, "vCtrlMax")
 
-        self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, exp1_addr, exp2_addr)
-        self.pwdled.setVch(0, 1, True)
-        self.pwdled.setVch(1, 0.9, True)
-        self.pwdled.setVch(2, 0.8, True)
-        self.pwdled.setVch(3, 0.1, True)
+        self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, pmtCtrVMax, exp1_addr, exp2_addr)
+        
         #self.pwdled.setIndicatorRGB(1, [0, 0, 1])
         #self.pwdled.setIndicatorRGB(2, [0, 0, 1])
         #self.pwdled.setIndicatorRGB(3, [0, 0, 1])
@@ -141,6 +139,8 @@ class TLU:
         self.pwdled.allBlack()
         #self.pwdled.kitt()
         self.pwdled.allBlack()
+        self.pwdled.allRed()
+        self.pwdled.allWhite()
 
 
 
@@ -846,6 +846,17 @@ class TLU:
         # # Stop internal triggers until setup complete
         cmd = int("0x0",16)
         self.setInternalTrg(cmd)
+        
+        # # Set the control voltages for the PMTs
+        print ">>>>>>>>>>>>>"
+        PMT1_V= parsed_cfg.getfloat(section_name, "PMT1_V")
+        PMT2_V= parsed_cfg.getfloat(section_name, "PMT2_V")
+        PMT3_V= parsed_cfg.getfloat(section_name, "PMT3_V")
+        PMT4_V= parsed_cfg.getfloat(section_name, "PMT4_V")
+        self.pwdled.setVch(0, PMT1_V, True)
+        self.pwdled.setVch(1, PMT2_V, True)
+        self.pwdled.setVch(2, PMT3_V, True)
+        self.pwdled.setVch(3, PMT4_V, True)
 
         # # Set pulse stretches
         str0= parsed_cfg.getint(section_name, "in0_STR")
