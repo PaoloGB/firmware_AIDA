@@ -1,5 +1,6 @@
 \chapter{Introduction}\label{ch:introduction}
-This manual describes the AIDA \gls{tlu} designed for the \href{http://aida2020.web.cern.ch/}{AIDA-2020 project} by David Cussans\footnote{University of Bristol, Particle Physics group} and Paolo Baesso\footnote{University of Bristol, Particle Physics group}.\\
+Congratulations on acquiring an AIDA2020 \gls{tlu}. We hope that the unit will help you to collect lots of useful data during your hardware tests.\\
+This manual describes the \gls{tlu} designed for the \href{http://aida2020.web.cern.ch/}{AIDA-2020 project} by David Cussans\footnote{University of Bristol, Particle Physics group} and Paolo Baesso\footnote{University of Bristol, Particle Physics group}.\\
 The unit is designed to be used in High Energy Physics beam-tests and provides a simple and flexible interface for fast timing and triggering signals at the AIDA pixel sensor beam-telescope.\\
 The current version of the hardware is an evolution of the \href{https://twiki.cern.ch/twiki/bin/view/MimosaTelescope/TLU}{EUDET-TLU} and the \href{https://www.ohwr.org/projects/fmc-mtlu/wiki}{miniTLU} and is shipped in a metal enclosure that includes an \gls{fpga} board, the \gls{tlu} \gls{pcb} and an additional power module: the \gls{fpga} is responsible for all the logic functions of the unit, while the \gls{pcb} contains the clock chip, discriminator and interface blocks needed to communicate with other devices. The power module contains programmable \gls{dac} to power photomultipliers and \gls{led} indicators.\\
 The current version of the \gls{pcb} is \brd and is designed to plug onto a carrier \gls{fpga} board like any other \gls{fmc} mezzanine board, although its form factor does not comply with the ANSI-VITA-57-1 standard.\\
@@ -78,7 +79,7 @@ Once these prerequisites are met, the procedure is as follows:
   \item Open the Vivado tools and select "Hardware manager", figure\ref{fig:hw_open}
   \item Select open target
   \item Identify the cable corresponding to the unit to be written and click open. The cable identifier is generally written on the back panel of the \gls{tlu}. If only one programming cable is connected to the computer, it is possible to use the auto-connect option.\\
-      Once done, the Vivado window will be populated, showing the cable and the \gls{fpga} attached to it.  
+      Once done, the Vivado window will be populated, showing the cable and the \gls{fpga} attached to it.
   \item Right click on the \gls{fpga} (typically xc7...) and select \verb"Program device" (see figure~\ref{fig:hw_addMemory})
   \item Locate the \verb".bit" file to be used and program
   \end{enumerate}
@@ -92,7 +93,7 @@ Once these prerequisites are met, the procedure is as follows:
   \includegraphics[width=.80\textwidth]{./Images/AddMemory.png}
   \caption{Program interface.}\label{fig:hw_addMemory}
 \end{figure}
- 
+
 \subsection{Configuration memory programming}
 The procedure to write a permanent program in the \gls{eeprom} is very similar to the one followed to write a bit stream file, with the exception that the user should select \verb"Add configuration memory device" in the options, as shown in figure~\ref{fig:hw_addMemory}.
 This will open a new window, shown in figure~\ref{fig:hw_eeprom}, from which it is possible to indicate the file to use (with extension \verb".mcr").
