@@ -130,6 +130,7 @@ class I2CCore:
         if not ack:
             self.cmd_stat.write(I2CCore.stopcmd)
             self.target.dispatch()
+            print "no ack from I2C address", hex(addr>>1)
             return nwritten
         nwritten += 1
         for val in data:
