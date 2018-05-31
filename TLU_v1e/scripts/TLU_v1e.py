@@ -59,11 +59,13 @@ class TLU:
         enableCore= True #Only need to run this once, after power-up
         self.enableCore()
         ####### EEPROM AX3 testing
-        self.ax3eeprom= ATSHA204A(self.TLU_I2C, 0x64)
-        print "shiftR\tdatBit\tcrcBit\tcrcReg \n", self.ax3eeprom._CalculateCrc([255, 12, 54, 28, 134, 89], 3)
-        self.ax3eeprom._wake(True, True)
-        print self.ax3eeprom._GetCommandPacketSize(8)
-        #self.eepromAX3read()
+        doAtmel= False
+        if doAtmel:
+            self.ax3eeprom= ATSHA204A(self.TLU_I2C, 0x64)
+            print "shiftR\tdatBit\tcrcBit\tcrcReg \n", self.ax3eeprom._CalculateCrc([255, 12, 54, 28, 134, 89], 3)
+            self.ax3eeprom._wake(True, True)
+            print self.ax3eeprom._GetCommandPacketSize(8)
+            #self.eepromAX3read()
         ####### EEPROM AX3 testing end
 
         # Instantiate clock chip and configure it (if necessary)
@@ -74,7 +76,7 @@ class TLU:
         if (int(parsed_cfg.get(section_name, "CONFCLOCK"), 16)):
             #clkRegList= self.zeClock.parse_clk("./../../bitFiles/TLU_CLK_Config_v1e.txt")
             clkRegList= self.zeClock.parse_clk(parsed_cfg.get(section_name, "CLOCK_CFG_FILE"))
-            self.zeClock.writeConfiguration(clkRegList)######
+            self.zeClock.writeConfiguration(clkRegList, self.verbose)######
 
         self.zeClock.checkDesignID()
 
@@ -118,12 +120,10 @@ class TLU:
         dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
         exp1_addr= int(parsed_cfg.get(section_name, "I2C_EXP1Module_Addr"), 16)
         exp2_addr= int(parsed_cfg.get(section_name, "I2C_EXP2Module_Addr"), 16)
+        pmtCtrVMax= parsed_cfg.getfloat(section_name, "PMT_vCtrlMax")
 
-        self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, exp1_addr, exp2_addr)
-        self.pwdled.setVch(0, 1, True)
-        self.pwdled.setVch(1, 0.9, True)
-        self.pwdled.setVch(2, 0.8, True)
-        self.pwdled.setVch(3, 0.1, True)
+        self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, pmtCtrVMax, exp1_addr, exp2_addr)
+
         #self.pwdled.setIndicatorRGB(1, [0, 0, 1])
         #self.pwdled.setIndicatorRGB(2, [0, 0, 1])
         #self.pwdled.setIndicatorRGB(3, [0, 0, 1])
@@ -141,6 +141,8 @@ class TLU:
         self.pwdled.allBlack()
         #self.pwdled.kitt()
         self.pwdled.allBlack()
+        self.pwdled.allRed()
+        self.pwdled.allWhite()
 
 
 
@@ -846,6 +848,16 @@ class TLU:
         # # Stop internal triggers until setup complete
         cmd = int("0x0",16)
         self.setInternalTrg(cmd)
+
+        # # Set the control voltages for the PMTs
+        PMT1_V= parsed_cfg.getfloat(section_name, "PMT1_V")
+        PMT2_V= parsed_cfg.getfloat(section_name, "PMT2_V")
+        PMT3_V= parsed_cfg.getfloat(section_name, "PMT3_V")
+        PMT4_V= parsed_cfg.getfloat(section_name, "PMT4_V")
+        self.pwdled.setVch(0, PMT1_V, True)
+        self.pwdled.setVch(1, PMT2_V, True)
+        self.pwdled.setVch(2, PMT3_V, True)
+        self.pwdled.setVch(3, PMT4_V, True)
 
         # # Set pulse stretches
         str0= parsed_cfg.getint(section_name, "in0_STR")
