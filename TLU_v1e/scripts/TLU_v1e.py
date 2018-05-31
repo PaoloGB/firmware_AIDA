@@ -59,11 +59,13 @@ class TLU:
         enableCore= True #Only need to run this once, after power-up
         self.enableCore()
         ####### EEPROM AX3 testing
-        self.ax3eeprom= ATSHA204A(self.TLU_I2C, 0x64)
-        print "shiftR\tdatBit\tcrcBit\tcrcReg \n", self.ax3eeprom._CalculateCrc([255, 12, 54, 28, 134, 89], 3)
-        self.ax3eeprom._wake(True, True)
-        print self.ax3eeprom._GetCommandPacketSize(8)
-        #self.eepromAX3read()
+        doAtmel= False
+        if doAtmel:
+            self.ax3eeprom= ATSHA204A(self.TLU_I2C, 0x64)
+            print "shiftR\tdatBit\tcrcBit\tcrcReg \n", self.ax3eeprom._CalculateCrc([255, 12, 54, 28, 134, 89], 3)
+            self.ax3eeprom._wake(True, True)
+            print self.ax3eeprom._GetCommandPacketSize(8)
+            #self.eepromAX3read()
         ####### EEPROM AX3 testing end
 
         # Instantiate clock chip and configure it (if necessary)
@@ -121,7 +123,7 @@ class TLU:
         pmtCtrVMax= parsed_cfg.getfloat(section_name, "PMT_vCtrlMax")
 
         self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, pmtCtrVMax, exp1_addr, exp2_addr)
-        
+
         #self.pwdled.setIndicatorRGB(1, [0, 0, 1])
         #self.pwdled.setIndicatorRGB(2, [0, 0, 1])
         #self.pwdled.setIndicatorRGB(3, [0, 0, 1])
@@ -846,7 +848,7 @@ class TLU:
         # # Stop internal triggers until setup complete
         cmd = int("0x0",16)
         self.setInternalTrg(cmd)
-        
+
         # # Set the control voltages for the PMTs
         PMT1_V= parsed_cfg.getfloat(section_name, "PMT1_V")
         PMT2_V= parsed_cfg.getfloat(section_name, "PMT2_V")
