@@ -3,6 +3,7 @@ import uhal
 from I2CuHal import I2CCore
 import StringIO
 
+
 class PCA9548ADW:
     #Class to configure the I2C multiplexer
 
