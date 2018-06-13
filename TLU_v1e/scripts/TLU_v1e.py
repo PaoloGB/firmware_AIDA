@@ -20,6 +20,7 @@ class TLU:
     """docstring for TLU"""
     def __init__(self, dev_name, man_file, parsed_cfg):
 
+        uhal.setLogLevelTo(uhal.LogLevel.NOTICE) ## Get rid of initial flood of IPBUS messages
         self.isRunning= False
 
         section_name= "Producer.fmctlu"
@@ -137,11 +138,16 @@ class TLU:
         #self.pwdled.setIndicatorRGB(11, [0, 0, 1])
 
         self.pwdled.allGreen()
+        time.sleep(0.1)
         self.pwdled.allBlue()
+        time.sleep(0.1)
         self.pwdled.allBlack()
+        time.sleep(0.1)
         #self.pwdled.kitt()
-        self.pwdled.allBlack()
-        self.pwdled.allRed()
+        time.sleep(0.1)
+        #self.pwdled.allBlack()
+        #self.pwdled.allRed()
+        #time.sleep(0.1)
         self.pwdled.allWhite()
 
 

@@ -89,7 +89,7 @@ class PWRLED:
             for iComp in range(0,3):
                 indexComp= self.indicatorXYZ[indicator-1][iComp]
                 valueComp= not bool(RGB[iComp])
-                nextWrd= self._set_bit(nextWrd, indexComp, int(valueComp))
+                nextWrd= self._set_bit(nextWrd, indexComp, int(valueComp), False)
                 if verbose:
                     print "n=", iComp, "INDEX=", indexComp, "VALUE=", int(valueComp), "NEXTWORD=", bin(nextWrd)
             if verbose:
@@ -110,10 +110,11 @@ class PWRLED:
         return
 
 
-    def _set_bit(self, v, index, x):
+    def _set_bit(self, v, index, x, verbose= False):
         """Set the index:th bit of v to 1 if x is truthy, else to 0, and return the new value."""
         if (index == -1):
-            print "  SETBIT: Index= -1 will be ignored"
+            if (verbose):
+              print "  SETBIT: Index= -1 will be ignored"
         else:
             mask = 1 << index   # Compute mask, an integer with just bit 'index' set.
             v &= ~mask          # Clear the bit indicated by the mask (if x is False)
@@ -164,6 +165,7 @@ class PWRLED:
 
     def kitt(self):
         #self.allBlack()
+        print "\tWait while LEDs are tested..."
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
@@ -476,3 +478,4 @@ class PWRLED:
         self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
+        print "\tLED test completed"
