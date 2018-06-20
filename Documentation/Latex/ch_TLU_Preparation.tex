@@ -40,13 +40,13 @@ The front panel of the \gls{tlu} is shown in figure~\ref{fig:frontpanel}; from l
 \section{Back panel}\label{ch:backpanelintro}
 The \gls{tlu} back panel is shown in figure~\ref{fig:backpanel}; from left to right, the main elements are:
 \begin{itemize}
-  \item RJ45 connector to communicate with the hardware using IPBus.
+  \item RJ45 connector: this is the connector used to communicate with the hardware using IPBus.
   \item \gls{usb}-B port used to flash the internal logic with a new version of the firmware. See section\ref{ch:fpgahardware} for details.
   \begin{alertinfo}{Note}
     This port should be left disconnected if planning to use the self-boot capability of the internal logic. If a cable is detected, the \gls{fpga} will not load the pre-flashed firmware at power-up.
   \end{alertinfo}
   \item \gls{usb}-B port used to communicate with the \gls{fpga} \gls{uart} port.
-  \item Power connector\footnote{Switchcraft 722A; mates with a $\phi$~5.5 mm jack with $\phi$~2.1 mm central pin. For instance use Lumberg 1633 02.}. Central pin is +12 V. It is recommended to use a power supply capable of providing at least 1~A.
+  \item Power connector\footnote{All TLUs shipped after 17/06/2018 use Switchcraft 721A; mates with a $\phi$~5.5 mm jack with $\phi$~2.5 mm central pin. For instance use Lumberg 1634 02.\\ TLUs shipped before that date use Switchcraft 722A instead, which mates with a $\phi$~5.5 mm jack with $\phi$~2.1 mm central pin. For instance use Lumberg 1633 02. Only 3 units are currently still using the 2.1~mm connector.}. Central pin is +12 V. It is recommended to use a power supply capable of providing at least 1~A.
 \end{itemize}
 \begin{figure}
   \centering
@@ -55,6 +55,15 @@ The \gls{tlu} back panel is shown in figure~\ref{fig:backpanel}; from left to ri
   \label{fig:backpanel}
 \end{figure}
 A cooling fan (not shown in figure~\ref{fig:backpanel} is also mounted on the back panel.
+
+\section{Setup}\label{ch:setup}
+At the moment of shipping, each \gls{tlu} is pre-configured with the most recent version of the firmware. It is therefore possible to power the unit and start using it almost immediately. The following steps are required to use the unit:
+\begin{enumerate}
+  \item Ensure no \gls{usb} cable is plugged in the unit
+  \item Power the unit using the provided power supply (+12~V) or an equivalent power supply. The pre-configured firmware will automatically load.
+  \item Plug an Ethernet cable in the back panel and connect it to the computer used to run the control software. Note that currently the unit uses a pre-defined IP address of 192.168.200.30. In future version of the firmware the address will be configurable.
+  \item Use the control software to configure the unit. In particular, after each power up it is necessary to re-configure the clock chip. See chapter~\ref{ch:controlsw} for details on the software and chapter~\ref{ch:clock} for details on the clock chip.
+\end{enumerate}
 
 \section{FPGA and firmware}\label{ch:fpgahardware}
 The firmware developed at University of Bristol is targeted to work with the Enclustra  AX3 board, which must be plugged onto a PM3 base, also produced by \href{http://www.enclustra.com/en/home/}{Enclustra}. The firmware is written on the \gls{fpga} using a \gls{jtag} interface. Typically a breakout board will be required to connect the Xilinx programming cable to the Enclustra PM3. All these components are included in the \gls{tlu} enclosure so the user can upload a new version of the firmware by simply connecting a \gls{usb}-B cable in the back panel of the unit.\\
