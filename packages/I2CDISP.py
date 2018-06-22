@@ -4,6 +4,10 @@ from I2CuHal2 import I2CCore
 import StringIO
 import time
 
+import math
+import numpy as np
+
+#######################################################################################
 class CFA632:
     #Class to configure the CFA632 display
 
@@ -22,7 +26,62 @@ class CFA632:
         #myaddr= [int(i2ccmd)]
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
 	return
-	
+
+#######################################################################################
+class LCD_ada:
+    def __init__(self, i2c, slaveaddr=0x20):
+        self.i2c = i2c
+        self.slaveaddr = slaveaddr
+        self.nRows= 2
+        self.nCols= 16
+        
+    def test(self):
+        mystop= True
+        i2ccmd= []
+        print "Write to LCD_ada"
+        print "\t", i2ccmd
+        #myaddr= [int(i2ccmd)]
+        self.getIOdir()
+        self.setIOdir(0x7F)
+        self.getIOdir()
+        self.setGPIO(0x80)
+        self.i2c.write( self.slaveaddr, i2ccmd, mystop)
+        
+    def getGPIO(self):
+        # Read port (if configured as inputs)
+        mystop=False
+        regN= 0x09
+        nwords= 1
+        self.i2c.write( self.slaveaddr, [regN], mystop)
+        res= self.i2c.read( self.slaveaddr, nwords)
+        print "MCP23008 IOdir", res
+        return res
+    
+    def setGPIO(self, gpio):
+        # Sets the output latch
+        mystop= True
+        i2ccmd= [9, gpio]
+        print "Write GPIO to MCP23008"
+        self.i2c.write( self.slaveaddr, i2ccmd, mystop)
+        
+    def getIOdir(self):
+        mystop=False
+        regN= 0x00
+        nwords= 1
+        self.i2c.write( self.slaveaddr, [regN], mystop)
+        res= self.i2c.read( self.slaveaddr, nwords)
+        print "MCP23008 IOdir", res
+        return res
+        
+    def setIOdir(self, iodir):
+        # 1 indicates the port is an input
+        # 0 indicates the port is an output
+        mystop= True
+        i2ccmd= [0, iodir]
+        print "Write IODIR to MCP23008"
+        self.i2c.write( self.slaveaddr, i2ccmd, mystop)
+
+#######################################################################################
 class LCD09052:
     #Class to configure the LCD09052 display
 
@@ -71,14 +130,19 @@ class LCD09052:
         return
         
     def test2(self):
-        self.clear()
-        self.setBrightness(0)
-        time.sleep(0.2)
-        self.setBrightness(250)
         #myString= [80, 81, 80, 81, 82]
         self.dispString("192.168.200.32")
         self.posCursor(2, 1)
         self.dispString("DUNE FANOUT")
+        self.pulseLCD(1)
+        time.sleep(0.3)
+        myChar= [0, 17, 0, 0, 17, 14, 0, 0]
+        #self.writeChar(1)
+        #time.sleep(1)
+        #self.createChar(1, [31, 31, 31, 0, 17, 14, 0, 0])
+        #self.createChar(2, [0, 0, 17, 0, 0, 17, 14, 0])
+        #time.sleep(1)
+        #self.writeChar(1)
         return
     
     def dispString(self, myString):
@@ -95,7 +159,6 @@ class LCD09052:
     ##  character to be printed. Use "dispString" to input an actual string.
         #i2ccmd= [1, myChars]
         myChars.insert(0, 1)
-        print myChars
         mystop= True
         self.i2c.write( self.slaveaddr, myChars, mystop)
     
@@ -152,6 +215,16 @@ class LCD09052:
         i2ccmd= [10, value]
         mystop= True
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
+        return
+        
+    def createChar(self, pos=1, myChar=[]):
+    ### Define a personalized character and stores it in position "pos"
+    ##  NOTE: This is not working yet.
+        mystop= True
+        myChar= [0, 17, 0, 0, 17, 14, 0, 0]
+        myChar.insert(0, 64)
+        self.i2c.write( self.slaveaddr, myChar, mystop)
+        return
     
     def writeSomething(self, i2ccmd):
         mystop= True
@@ -161,3 +234,15 @@ class LCD09052:
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
 	return
 
+    def pulseLCD(self, nCycles):
+    ### Sets the backlight to pulse for N cycles.
+    ##  Each cycle lasts approximately 1.5 s and start/stop on full brightness
+    ##  The light varies according to a sinusoidal wave
+        startP= 0
+        endP= nCycles*(math.pi)
+        nPoints= 15*nCycles
+        myList= np.linspace(startP, endP, nPoints).tolist()
+        for iPt in myList:
+            iBright= int(250*abs(math.cos(iPt)))
+            self.setBrightness(iBright)
+            time.sleep(0.1)

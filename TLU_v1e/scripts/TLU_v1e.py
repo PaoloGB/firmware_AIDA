@@ -12,7 +12,7 @@ from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
-from I2CDISP import CFA632 #Library for display
+from I2CDISP import LCD_ada #Library for display
 from TLU_powermodule import PWRLED
 from ATSHA204A import ATSHA204A
 
@@ -115,7 +115,11 @@ class TLU:
         self.IC7.setOutputs(1, 0xB0)# If output, set to XX
 
         #Instantiate Display
-        self.DISP=CFA632(self.TLU_I2C, 0x2A) #
+        doDisplaytest= True
+        if doDisplaytest:
+          self.DISP=LCD_ada(self.TLU_I2C, 0x20) #3A
+          self.DISP.test()
+        #self.DISP=CFA632(self.TLU_I2C, 0x2A) #
 
         #Instantiate Power/Led Module
         dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
@@ -150,6 +154,7 @@ class TLU:
         #time.sleep(0.1)
         self.pwdled.allWhite()
 
+        
 
 
 ##################################################################################################################################
