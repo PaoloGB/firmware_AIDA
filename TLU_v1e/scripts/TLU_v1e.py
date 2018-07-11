@@ -130,31 +130,16 @@ class TLU:
 
         self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, pmtCtrVMax, exp1_addr, exp2_addr)
 
-        #self.pwdled.setIndicatorRGB(1, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(2, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(3, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(4, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(5, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(6, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(7, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(8, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(9, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(10, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(11, [0, 0, 1])
-
         self.pwdled.allGreen()
         time.sleep(0.1)
         self.pwdled.allBlue()
         time.sleep(0.1)
         self.pwdled.allBlack()
         time.sleep(0.1)
-        #self.pwdled.kitt()
+        self.pwdled.kitt()
         time.sleep(0.1)
-        #self.pwdled.allBlack()
-        #self.pwdled.allRed()
-        #time.sleep(0.1)
         self.pwdled.allWhite()
-
+        self.pwdled.test()
         
 
 

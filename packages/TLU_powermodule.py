@@ -4,6 +4,7 @@ from I2CuHal import I2CCore
 #import StringIO
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
+import time
 
 class PWRLED:
     #Class to configure the EEPROM
@@ -17,10 +18,16 @@ class PWRLED:
         self.intRefOn= 0
         self.vCtrlMax= PMTmaxV
         self.verbose= True
-        #Map indicator color based on their position on the expanders: 0-15 are on expander 2, 16 to 31 on expander 1. One indicator is missing the blue component, hence
-        #the "-1" value.
-        #self.indicatorXYZ= [(1, 0, -1), (3, 2, 4), (6, 5, 7), (9, 8, 10), (12, 11, 13), (15, 14, 16), (18, 17, 19), (21, 20, 22), (24, 23, 25), (27, 26, 28), (30, 29, 31)]
-        self.indicatorXYZ= [(30, 29, 31), (27, 26, 28), (24, 23, 25), (21, 20, 22), (18, 17, 19), (15, 14, 16), (12, 11, 13), (9, 8, 10), (6, 5, 7), (3, 2, 4), (1, 0, -1)]
+        
+        ## Identify the type of power board by trying to read the EEPROM (if fail, it is an old one):
+        res= self.readEEPROM()
+        if (len(res) != 0):
+            self.bdType= 1
+        else:
+            self.bdType= 0
+        print "\tPOWERMODULE type:", self.bdType
+        self.assignMapping()
+        
 
         self.zeDAC_pwr=AD5665R(self.TLU_I2C, self.pwraddr)
         self.zeDAC_pwr.setIntRef(self.intRefOn, self.verbose)
@@ -44,11 +51,39 @@ class PWRLED:
         self.ledExp2.setIOReg(1, 0x00)# 0= output, 1= input
         self.ledExp2.setOutputs(1, 0xDB)# If output, set to XX
         print "  TLU POWERMODULE Ready"
-
-    def test(self):
-	    print "Testing the powermodule"
-	    return
-
+        return
+    
+    def readEEPROM(self):
+        ## Read content of EEPROM. New power modules host a 24AA025E48T, similar
+        #  to the one on the TLU but at address 0x50. Old modules will fail to ACKNOWLEDGE.
+        eepromadd= 0x51
+        bytes= 6
+        startadd= 0xfa
+        mystop= 1
+        time.sleep(0.1)
+        myaddr= [startadd]#0xfa
+        self.TLU_I2C.write( eepromadd, [startadd], mystop)
+        res= self.TLU_I2C.read( eepromadd, bytes)
+        print "  POWERMODULE serial number (EEPROM):"
+        result="\t"
+        for iaddr in res:
+            result+="%02x "%(iaddr)
+        print result
+        return res
+	
+    def assignMapping(self):
+        ## Map indicator color based on their position on the expanders:
+        #  0-15 are on expander 2
+        #  16 to 31 on expander 1.
+        #  One indicator is missing the blue component, hence
+        #  the "-1" value.
+        if (self.bdType==0):
+            #  Old board (with misplaced LED connection)
+            self.indicatorXYZ= [(30, 29, 31), (27, 26, 28), (24, 23, 25), (21, 20, 22), (18, 17, 19), (15, 14, 16), (12, 11, 13), (9, 8, 10), (6, 5, 7), (3, 2, 4), (1, 0, -1)]
+        else:
+            #  New board (with correct LED and EEPROM)
+            self.indicatorXYZ= [(30, 29, 31), (27, 26, 28), (24, 23, 25), (21, 20, 22), (18, 17, -1), (15, 14, 16), (12, 11, 13), (9, 8, 10), (6, 5, 7), (3, 2, 4), (1, 0, 19)]
+    
     def setVch(self, channel, voltage, verbose=False):
         # Note: the channel here is the DAC channel.
         # The mapping with the power module is not one-to-one
@@ -164,318 +199,139 @@ class PWRLED:
         self.ledExp2.setOutputs(1, 0)
 
     def kitt(self):
-        #self.allBlack()
+        self.allBlack()
         print "\tWait while LEDs are tested..."
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
+                
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [1, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
+        
         self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [1, 0, 0])
+        #self.setIndicatorRGB(2, [1, 0, 0])
         self.setIndicatorRGB(3, [1, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
+        
         self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [1, 0, 0])
+        #self.setIndicatorRGB(3, [1, 0, 0])
         self.setIndicatorRGB(4, [1, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
+        
         self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [1, 0, 0])
+        #self.setIndicatorRGB(4, [1, 0, 0])
         self.setIndicatorRGB(5, [1, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
+        
+        #self.setIndicatorRGB(3, [0, 0, 0])
         self.setIndicatorRGB(4, [1, 0, 0])
-        self.setIndicatorRGB(5, [1, 0, 0])
+        #self.setIndicatorRGB(5, [1, 0, 0])
         self.setIndicatorRGB(6, [1, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
+        
         self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [1, 0, 0])
-        self.setIndicatorRGB(6, [1, 0, 0])
+        #self.setIndicatorRGB(5, [1, 0, 0])
+        #self.setIndicatorRGB(6, [1, 0, 0])
         self.setIndicatorRGB(7, [1, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
+        
         self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [1, 0, 0])
-        self.setIndicatorRGB(7, [1, 0, 0])
+        #self.setIndicatorRGB(6, [1, 0, 0])
+        #self.setIndicatorRGB(7, [1, 0, 0])
         self.setIndicatorRGB(8, [1, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
+        
         self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [1, 0, 0])
-        self.setIndicatorRGB(8, [1, 0, 0])
+        #self.setIndicatorRGB(7, [1, 0, 0])
+        #self.setIndicatorRGB(8, [1, 0, 0])
         self.setIndicatorRGB(9, [1, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
+        
         self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [1, 0, 0])
-        self.setIndicatorRGB(9, [1, 0, 0])
+        #self.setIndicatorRGB(8, [1, 0, 0])
+        #self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
+        
         self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [1, 0, 0])
-        self.setIndicatorRGB(10, [1, 0, 0])
+        #self.setIndicatorRGB(9, [1, 0, 0])
+        #self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
 
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
         self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [1, 0, 0])
+        #self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
 
         #mid point
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
+        #self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
 
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
+        #self.setIndicatorRGB(9, [0, 0, 0])
         self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
 
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
         self.setIndicatorRGB(9, [1, 0, 0])
-        self.setIndicatorRGB(10, [1, 0, 0])
+        #self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [1, 0, 0])
 
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
         self.setIndicatorRGB(8, [1, 0, 0])
-        self.setIndicatorRGB(9, [1, 0, 0])
-        self.setIndicatorRGB(10, [1, 0, 0])
+        #self.setIndicatorRGB(9, [1, 0, 0])
+        #self.setIndicatorRGB(10, [1, 0, 0])
         self.setIndicatorRGB(11, [0, 0, 0])
 
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
         self.setIndicatorRGB(7, [1, 0, 0])
-        self.setIndicatorRGB(8, [1, 0, 0])
-        self.setIndicatorRGB(9, [1, 0, 0])
+        #self.setIndicatorRGB(8, [1, 0, 0])
+        #self.setIndicatorRGB(9, [1, 0, 0])
         self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
+        
         self.setIndicatorRGB(6, [1, 0, 0])
-        self.setIndicatorRGB(7, [1, 0, 0])
-        self.setIndicatorRGB(8, [1, 0, 0])
+        #self.setIndicatorRGB(7, [1, 0, 0])
+        #self.setIndicatorRGB(8, [1, 0, 0])
         self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
+        
         self.setIndicatorRGB(5, [1, 0, 0])
-        self.setIndicatorRGB(6, [1, 0, 0])
-        self.setIndicatorRGB(7, [1, 0, 0])
+        #self.setIndicatorRGB(6, [1, 0, 0])
+        #self.setIndicatorRGB(7, [1, 0, 0])
         self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
+        
         self.setIndicatorRGB(4, [1, 0, 0])
-        self.setIndicatorRGB(5, [1, 0, 0])
-        self.setIndicatorRGB(6, [1, 0, 0])
+        #self.setIndicatorRGB(5, [1, 0, 0])
+        #self.setIndicatorRGB(6, [1, 0, 0])
         self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
+        
         self.setIndicatorRGB(4, [1, 0, 0])
-        self.setIndicatorRGB(5, [1, 0, 0])
+        #self.setIndicatorRGB(5, [1, 0, 0])
         self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
-        self.setIndicatorRGB(2, [0, 0, 0])
+        
         self.setIndicatorRGB(3, [1, 0, 0])
-        self.setIndicatorRGB(4, [1, 0, 0])
+        #self.setIndicatorRGB(4, [1, 0, 0])
         self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
-        self.setIndicatorRGB(1, [0, 0, 0])
+        
         self.setIndicatorRGB(2, [1, 0, 0])
-        self.setIndicatorRGB(3, [1, 0, 0])
+        #self.setIndicatorRGB(3, [1, 0, 0])
         self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
+        
         self.setIndicatorRGB(1, [1, 0, 0])
-        self.setIndicatorRGB(2, [1, 0, 0])
+        #self.setIndicatorRGB(2, [1, 0, 0])
         self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
+        
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
-
+        
         self.setIndicatorRGB(1, [1, 0, 0])
         self.setIndicatorRGB(2, [0, 0, 0])
-        self.setIndicatorRGB(3, [0, 0, 0])
-        self.setIndicatorRGB(4, [0, 0, 0])
-        self.setIndicatorRGB(5, [0, 0, 0])
-        self.setIndicatorRGB(6, [0, 0, 0])
-        self.setIndicatorRGB(7, [0, 0, 0])
-        self.setIndicatorRGB(8, [0, 0, 0])
-        self.setIndicatorRGB(9, [0, 0, 0])
-        self.setIndicatorRGB(10, [0, 0, 0])
-        self.setIndicatorRGB(11, [0, 0, 0])
         print "\tLED test completed"
+        
+    def test(self):
+        print "Testing the powermodule"
+        self.allBlack()
+        # loop over red
+        for iLED in range(0, 12):
+            self.setIndicatorRGB(iLED, [1, 0, 0])
+            self.setIndicatorRGB(iLED-1, [0, 0, 0])
+            time.sleep(0.1)
+        self.allBlack()
+        # loop over green
+        for iLED in range(0, 12):
+            self.setIndicatorRGB(iLED, [0, 1, 0])
+            self.setIndicatorRGB(iLED-1, [0, 0, 0])
+            time.sleep(0.1)
+        self.allBlack()
+        # loop over blue (one will be missing)
+        for iLED in range(0, 12):
+            self.setIndicatorRGB(iLED, [0, 0, 1])
+            self.setIndicatorRGB(iLED-1, [0, 0, 0])
+            time.sleep(0.1)
+        return
