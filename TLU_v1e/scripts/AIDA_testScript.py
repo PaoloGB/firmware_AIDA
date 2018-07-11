@@ -7,6 +7,7 @@ from si5345 import si5345
 from AD5665R import AD5665R
 from PCA9539PW import PCA9539PW
 from E24AA025E48T import E24AA025E48T
+from I2CDISP import LCD_ada #Library for display
 
 manager = uhal.ConnectionManager("file://./TLUconnection.xml")
 hw = manager.getDevice("tlu")
@@ -162,6 +163,13 @@ res= IC7.getInputs(1)
 print "\tIC7 read back bank 1: 0x%X" % res[0]
 # #I2C EXPANDER CONFIGURATION END
 
+
+#Instantiate Display
+doDisplaytest= False
+if doDisplaytest:
+  DISP=LCD_ada(master_I2C, 0x20) #3A
+  #self.DISP.clear()
+  DISP.test()
 
 # #Reset counters
 #cmd = int("0x0", 16) #write 0x2 to reset

@@ -129,11 +129,12 @@ class LCD09052:
         self.writeString([80, 81, 80, 81, 82])
         return
         
-    def test2(self):
+    def test2(self, myString1= "", myString2= ""):
         #myString= [80, 81, 80, 81, 82]
-        self.dispString("192.168.200.32")
+        self.clear()
+        self.dispString(myString1)
         self.posCursor(2, 1)
-        self.dispString("DUNE FANOUT")
+        self.dispString(myString2)
         self.pulseLCD(1)
         time.sleep(0.3)
         myChar= [0, 17, 0, 0, 17, 14, 0, 0]

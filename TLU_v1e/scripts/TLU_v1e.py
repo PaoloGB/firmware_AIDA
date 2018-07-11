@@ -12,7 +12,8 @@ from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
-from I2CDISP import LCD_ada #Library for display
+#from I2CDISP import LCD_ada # Library for Adafruit display
+from I2CDISP import LCD09052 # Library for SparkFun display
 from TLU_powermodule import PWRLED
 from ATSHA204A import ATSHA204A
 
@@ -117,8 +118,8 @@ class TLU:
         #Instantiate Display
         doDisplaytest= True
         if doDisplaytest:
-          self.DISP=LCD_ada(self.TLU_I2C, 0x20) #3A
-          self.DISP.test()
+          self.DISP=LCD09052(self.TLU_I2C, 0x3A) #0x3A for Sparkfun, 0x20 for Adafruit
+          self.DISP.test2("192.168.200.30", "AIDA TLU")
         #self.DISP=CFA632(self.TLU_I2C, 0x2A) #
 
         #Instantiate Power/Led Module
