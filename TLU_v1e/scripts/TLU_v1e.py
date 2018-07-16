@@ -115,11 +115,18 @@ class TLU:
         self.IC7.setIOReg(1, 0x00)# 0= output, 1= input
         self.IC7.setOutputs(1, 0xB0)# If output, set to XX
 
-        #Instantiate Display
-        doDisplaytest= True
-        if doDisplaytest:
-          self.DISP=LCD09052(self.TLU_I2C, 0x3A) #0x3A for Sparkfun, 0x20 for Adafruit
-          self.DISP.test2("192.168.200.30", "AIDA TLU")
+        #Attempt to instantiate Display
+        self.displayPresent= True
+        i2ccmd= [7, 150]
+        mystop= True
+        print "  Attempting to detect TLU display"
+        res= self.TLU_I2C.write( 0x3A, i2ccmd, mystop)
+        if (res== -1): # if this fails, likely no display installed
+            self.displayPresent= False
+            print "\tNo TLU display detected"
+        if self.displayPresent:
+            self.DISP=LCD09052(self.TLU_I2C, 0x3A) #0x3A for Sparkfun, 0x20 for Adafruit
+            self.DISP.test2("192.168.200.30", "AIDA TLU")
         #self.DISP=CFA632(self.TLU_I2C, 0x2A) #
 
         #Instantiate Power/Led Module
