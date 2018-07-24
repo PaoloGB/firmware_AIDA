@@ -12,7 +12,8 @@ from I2CuHal import I2CCore
 from si5345 import si5345 # Library for clock chip
 from AD5665R import AD5665R # Library for DAC
 from PCA9539PW import PCA9539PW # Library for serial line expander
-from I2CDISP import CFA632 #Library for display
+#from I2CDISP import LCD_ada # Library for Adafruit display
+from I2CDISP import LCD09052 # Library for SparkFun display
 from TLU_powermodule import PWRLED
 from ATSHA204A import ATSHA204A
 
@@ -114,8 +115,19 @@ class TLU:
         self.IC7.setIOReg(1, 0x00)# 0= output, 1= input
         self.IC7.setOutputs(1, 0xB0)# If output, set to XX
 
-        #Instantiate Display
-        self.DISP=CFA632(self.TLU_I2C, 0x2A) #
+        #Attempt to instantiate Display
+        self.displayPresent= True
+        i2ccmd= [7, 150]
+        mystop= True
+        print "  Attempting to detect TLU display"
+        res= self.TLU_I2C.write( 0x3A, i2ccmd, mystop)
+        if (res== -1): # if this fails, likely no display installed
+            self.displayPresent= False
+            print "\tNo TLU display detected"
+        if self.displayPresent:
+            self.DISP=LCD09052(self.TLU_I2C, 0x3A) #0x3A for Sparkfun, 0x20 for Adafruit
+            self.DISP.test2("192.168.200.30", "AIDA TLU")
+        #self.DISP=CFA632(self.TLU_I2C, 0x2A) #
 
         #Instantiate Power/Led Module
         dac_addr_module= int(parsed_cfg.get(section_name, "I2C_DACModule_Addr"), 16)
@@ -125,31 +137,17 @@ class TLU:
 
         self.pwdled= PWRLED(self.TLU_I2C, dac_addr_module, pmtCtrVMax, exp1_addr, exp2_addr)
 
-        #self.pwdled.setIndicatorRGB(1, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(2, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(3, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(4, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(5, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(6, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(7, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(8, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(9, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(10, [0, 0, 1])
-        #self.pwdled.setIndicatorRGB(11, [0, 0, 1])
-
         self.pwdled.allGreen()
         time.sleep(0.1)
         self.pwdled.allBlue()
         time.sleep(0.1)
         self.pwdled.allBlack()
         time.sleep(0.1)
-        #self.pwdled.kitt()
+        self.pwdled.kitt()
         time.sleep(0.1)
-        #self.pwdled.allBlack()
-        #self.pwdled.allRed()
-        #time.sleep(0.1)
         self.pwdled.allWhite()
-
+        #self.pwdled.test()
+        
 
 
 ##################################################################################################################################
