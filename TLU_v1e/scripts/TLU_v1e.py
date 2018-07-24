@@ -146,7 +146,7 @@ class TLU:
         self.pwdled.kitt()
         time.sleep(0.1)
         self.pwdled.allWhite()
-        self.pwdled.test()
+        #self.pwdled.test()
         
 
 

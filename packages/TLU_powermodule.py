@@ -315,7 +315,7 @@ class PWRLED:
         print "\tLED test completed"
         
     def test(self):
-        print "Testing the powermodule"
+        print "  Testing the powermodule"
         self.allBlack()
         # loop over red
         for iLED in range(0, 12):
@@ -334,4 +334,6 @@ class PWRLED:
             self.setIndicatorRGB(iLED, [0, 0, 1])
             self.setIndicatorRGB(iLED-1, [0, 0, 0])
             time.sleep(0.1)
+        self.allBlack()
+        print "  Powermodule test done"
         return

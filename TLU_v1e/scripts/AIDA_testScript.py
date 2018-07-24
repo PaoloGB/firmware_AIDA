@@ -158,7 +158,7 @@ print "\tIC7 read back bank 0: 0x%X" % res[0]
 #BANK 1
 IC7.setInvertReg(1, 0x00)# 0= normal
 IC7.setIOReg(1, 0x00)# 0= output <<<<<<<<<<<<<<<<<<<
-IC7.setOutputs(1, 0xB0)
+IC7.setOutputs(1, 0xAF)
 res= IC7.getInputs(1)
 print "\tIC7 read back bank 1: 0x%X" % res[0]
 # #I2C EXPANDER CONFIGURATION END
