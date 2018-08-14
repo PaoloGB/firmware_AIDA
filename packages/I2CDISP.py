@@ -18,7 +18,7 @@ class CFA632:
     def test(self):
         print "Testing the display"
         return
-    
+
     def writeSomething(self, i2ccmd):
         mystop= True
         print "Write to CFA632"
@@ -34,7 +34,7 @@ class LCD_ada:
         self.slaveaddr = slaveaddr
         self.nRows= 2
         self.nCols= 16
-        
+
     def test(self):
         mystop= True
         i2ccmd= []
@@ -46,7 +46,7 @@ class LCD_ada:
         self.getIOdir()
         self.setGPIO(0x80)
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
-        
+
     def getGPIO(self):
         # Read port (if configured as inputs)
         mystop=False
@@ -56,14 +56,14 @@ class LCD_ada:
         res= self.i2c.read( self.slaveaddr, nwords)
         print "MCP23008 IOdir", res
         return res
-    
+
     def setGPIO(self, gpio):
         # Sets the output latch
         mystop= True
         i2ccmd= [9, gpio]
         print "Write GPIO to MCP23008"
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
-        
+
     def getIOdir(self):
         mystop=False
         regN= 0x00
@@ -72,7 +72,7 @@ class LCD_ada:
         res= self.i2c.read( self.slaveaddr, nwords)
         print "MCP23008 IOdir", res
         return res
-        
+
     def setIOdir(self, iodir):
         # 1 indicates the port is an input
         # 0 indicates the port is an output
@@ -128,7 +128,7 @@ class LCD09052:
         self.clearLine(1)
         self.writeString([80, 81, 80, 81, 82])
         return
-        
+
     def test2(self, myString1= "", myString2= ""):
         #myString= [80, 81, 80, 81, 82]
         self.clear()
@@ -145,7 +145,7 @@ class LCD09052:
         #time.sleep(1)
         #self.writeChar(1)
         return
-    
+
     def dispString(self, myString):
     ### Writes the string on the display
         myInts=[]
@@ -153,7 +153,7 @@ class LCD09052:
             myInts.append(ord(iChar))
         self.writeString(myInts)
         return
-    
+
     def writeString(self, myChars):
     ### Writes a list of chars from the current position of the cursor
     ##  NOTE: myChars is a list of integers corresponding to the ASCII code of each
@@ -162,31 +162,31 @@ class LCD09052:
         myChars.insert(0, 1)
         mystop= True
         self.i2c.write( self.slaveaddr, myChars, mystop)
-    
+
     def posCursor(self, line, pos):
     ### Position the cursor on a specific location
     ##  line can be 1 (top) or 2 (bottom)
     ##  pos can be [1, 16}
-        if ((line==1) or (line==2) and (1 <= pos <= self.nCols)):
+        if ( ((line==1) or (line==2)) and (1 <= pos <= self.nCols)):
             i2ccmd= [2, line, pos]
             mystop= True
             self.i2c.write( self.slaveaddr, i2ccmd, mystop)
         else:
             print "Cursor line can only be 1 or 2, position must be in range [1,", self.nCols, "]"
-    
+
     def clearLine(self, iLine):
     ### Clear line. Place cursor at beginning of line.
         if ((iLine==1) or (iLine==2)):
             i2ccmd= [3, iLine]
             mystop= True
             self.i2c.write( self.slaveaddr, i2ccmd, mystop)
-    
+
     def clear(self):
     ### Clears the display and locates the curson on position (1,1), i.e. top left
         i2ccmd= [4]
         mystop= True
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
-        
+
     def setLCDtype(self, nLines, nColumns):
     ### Specifies the number of lines and columns in the display.
     ##  This does not seem to do much but we use it anyway.
@@ -195,7 +195,7 @@ class LCD09052:
         i2ccmd= [5, nLines, nColumns]
         mystop= True
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
-        
+
     def setBrightness(self, value= 250):
     ### Sets the brightness level of the backlight.
     ##  Value is an integer in range [0, 250]. 0= no light, 250= maximum light.
@@ -208,7 +208,7 @@ class LCD09052:
         i2ccmd= [7, value]
         mystop= True
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
-        
+
     def writeChar(self, value):
     ### Writes a char in the current cursor position
     ##  The cursor is then shifted right one position
@@ -217,7 +217,7 @@ class LCD09052:
         mystop= True
         self.i2c.write( self.slaveaddr, i2ccmd, mystop)
         return
-        
+
     def createChar(self, pos=1, myChar=[]):
     ### Define a personalized character and stores it in position "pos"
     ##  NOTE: This is not working yet.
@@ -226,7 +226,7 @@ class LCD09052:
         myChar.insert(0, 64)
         self.i2c.write( self.slaveaddr, myChar, mystop)
         return
-    
+
     def writeSomething(self, i2ccmd):
         mystop= True
         print "Write to LCD09052"
