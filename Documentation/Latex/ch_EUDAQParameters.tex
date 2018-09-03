@@ -44,7 +44,7 @@ Not all parameters are needed; if one of the parameters is not present in the fi
 \section{CONF file}
 \begin{description}
   \item[confid] \verb|[string, "0"]| Does not serve any purpose in the code but can be useful to identify configuration settings used in a specific run. EUDAQ will store this information in the run data.
-  \item[verbose] \verb|[int, 0]| Defines the level of output messages from the \gls{tlu}. 0 indicates minimum output.
+  \item[verbose] \verb|[int, 0]| Defines the level of output messages from the \gls{tlu}. 0= only errors (minimum), 1= warning (default), 2= info, 3= all.
   \item[skipconf] \verb|[int, 0]| When this flag is set, EUDAQ will skip the whole configuration phase for the \gls{tlu}. When the user configures the hardware in EUDAQ, the board will remain in its current state and no configuration parameter will be written. This can be useful to avoid disturbing other pieces of electronics.
   \item[HDMI1\_set] \verb|[unsigned int, 0b0001]| Defines the source of the signal on the pins for the \verb|HDMI1| connector. A 1 indicates that each pin pair is an driven by the \gls{tlu}, a 0 that they are left floating (with respect to the \gls{tlu}). This can be used to define the signal direction on each pin pair. The order of the pairs is as follow:\\
   bit 0= CONT, bit 1= SPARE, bit 2= TRIG, bit 3= BUSY.\\
