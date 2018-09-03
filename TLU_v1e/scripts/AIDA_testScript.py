@@ -93,16 +93,17 @@ if (enableCore):
 #CLOCK CONFIGURATION BEGIN
 zeClock=si5345(master_I2C, 0x68)
 res= zeClock.getDeviceVersion()
-zeClock.checkDesignID()
 #zeClock.setPage(0, True)
 #zeClock.getPage(True)
-doClock= False
+doClock= True
 if (doClock):
   clkRegList= zeClock.parse_clk("./../../bitFiles/TLU_CLK_Config_v1e.txt")
-  zeClock.writeConfiguration(clkRegList)######
+  #clkRegList= zeClock.parse_clk("./../../bitFiles/TLU_Si5345-RevB-NEWTLU02-PDTS-ExternalClk_Project-Registers.txt")
+  zeClock.writeConfiguration(clkRegList, 1)######
   zeClock.writeRegister(0x0536, [0x0A]) #Configures manual switch of inputs
   zeClock.writeRegister(0x0949, [0x0F]) #Enable all inputs
   zeClock.writeRegister(0x052A, [0x05]) #Configures source of input
+zeClock.checkDesignID()
 iopower= zeClock.readRegister(0x0949, 1)
 print "  Clock IO power: 0x%X" % iopower[0]
 lol= zeClock.readRegister(0x000E, 1)
